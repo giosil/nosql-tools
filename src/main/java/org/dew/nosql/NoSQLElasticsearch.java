@@ -98,18 +98,21 @@ class NoSQLElasticsearch implements INoSQLDB
 		if(this.pass == null) this.pass="";
 	}
 	
+	@Override
 	public
 	void setDebug(boolean debug)
 	{
 		this.debug = debug;
 	}
 	
+	@Override
 	public
 	boolean isDebug()
 	{
 		return debug;
 	}
 	
+	@Override
 	public
 	Map<String,Object> getInfo()
 		throws Exception
@@ -132,6 +135,7 @@ class NoSQLElasticsearch implements INoSQLDB
 		return mapResult;
 	}
 	
+	@Override
 	public
 	List<String> getCollections()
 		throws Exception
@@ -173,6 +177,7 @@ class NoSQLElasticsearch implements INoSQLDB
 		return listResult;
 	}
 	
+	@Override
 	public 
 	boolean drop(String collection) 
 		throws Exception
@@ -183,6 +188,7 @@ class NoSQLElasticsearch implements INoSQLDB
 		return result;
 	}
 	
+	@Override
 	public
 	String insert(String collection, Map<String,?> mapData)
 		throws Exception
@@ -200,6 +206,7 @@ class NoSQLElasticsearch implements INoSQLDB
 		return result;
 	}
 	
+	@Override
 	public
 	String insert(String collection, Map<String,?> mapData, boolean refresh)
 		throws Exception
@@ -219,6 +226,7 @@ class NoSQLElasticsearch implements INoSQLDB
 		return result;
 	}
 	
+	@Override
 	public
 	int bulkIns(String collection, List<Map<String,?>> listData)
 		throws Exception
@@ -266,6 +274,7 @@ class NoSQLElasticsearch implements INoSQLDB
 		return countIns;
 	}
 	
+	@Override
 	public
 	boolean replace(String collection, Map<String,?> mapData, String id)
 		throws Exception
@@ -282,6 +291,7 @@ class NoSQLElasticsearch implements INoSQLDB
 		return result;
 	}
 	
+	@Override
 	public
 	int update(String collection, Map<String,?> mapData, String id)
 		throws Exception
@@ -313,6 +323,7 @@ class NoSQLElasticsearch implements INoSQLDB
 		return 1;
 	}
 	
+	@Override
 	public
 	int update(String collection, Map<String,?> mapData, Map<String,?> mapFilter)
 		throws Exception
@@ -358,6 +369,7 @@ class NoSQLElasticsearch implements INoSQLDB
 		return countUpd;
 	}
 	
+	@Override
 	public
 	String upsert(String collection, Map<String,?> mapData, Map<String,?> mapFilter)
 		throws Exception
@@ -409,6 +421,7 @@ class NoSQLElasticsearch implements INoSQLDB
 		return id;
 	}
 	
+	@Override
 	public
 	int unset(String collection, String fields, String id)
 		throws Exception
@@ -443,6 +456,7 @@ class NoSQLElasticsearch implements INoSQLDB
 		return 1;
 	}
 	
+	@Override
 	public
 	int inc(String collection, String id, String field, Number value)
 		throws Exception
@@ -468,6 +482,7 @@ class NoSQLElasticsearch implements INoSQLDB
 		return 1;
 	}
 	
+	@Override
 	public
 	int inc(String collection, String id, String field1, Number value1, String field2, Number value2)
 		throws Exception
@@ -494,6 +509,7 @@ class NoSQLElasticsearch implements INoSQLDB
 		return 1;
 	}
 	
+	@Override
 	public
 	int inc(String collection, Map<String,?> mapFilter, String field, Number value)
 		throws Exception
@@ -534,6 +550,7 @@ class NoSQLElasticsearch implements INoSQLDB
 		return countUpd;
 	}
 	
+	@Override
 	public
 	int inc(String collection, Map<String,?> mapFilter, String field1, Number value1, String field2, Number value2)
 		throws Exception
@@ -575,6 +592,7 @@ class NoSQLElasticsearch implements INoSQLDB
 		return countUpd;
 	}
 	
+	@Override
 	public
 	int delete(String collection, String id)
 		throws Exception
@@ -600,6 +618,7 @@ class NoSQLElasticsearch implements INoSQLDB
 		return 0;
 	}
 	
+	@Override
 	public
 	int delete(String collection, Map<String,?> mapFilter)
 		throws Exception
@@ -640,6 +659,7 @@ class NoSQLElasticsearch implements INoSQLDB
 		return countDel;
 	}
 	
+	@Override
 	public
 	List<Map<String,Object>> find(String collection, Map<String,?> mapFilter, String fields)
 		throws Exception
@@ -860,6 +880,7 @@ class NoSQLElasticsearch implements INoSQLDB
 		return listResult;
 	}
 	
+	@Override
 	public
 	List<Map<String,Object>> search(String collection, String field, String text)
 		throws Exception
@@ -927,6 +948,7 @@ class NoSQLElasticsearch implements INoSQLDB
 		return listResult;
 	}
 	
+	@Override
 	public
 	List<Map<String,Object>> group(String collection, Map<String,?> mapFilter, String field, String groupFunction)
 		throws Exception
@@ -1004,6 +1026,7 @@ class NoSQLElasticsearch implements INoSQLDB
 		return listResult;
 	}
 	
+	@Override
 	public
 	Map<String,Object> read(String collection, String id)
 		throws Exception
@@ -1025,6 +1048,7 @@ class NoSQLElasticsearch implements INoSQLDB
 		return mapSource;
 	}
 	
+	@Override
 	public
 	int count(String collection, Map<String,?> mapFilter)
 		throws Exception
@@ -1052,6 +1076,7 @@ class NoSQLElasticsearch implements INoSQLDB
 		return result;
 	}
 	
+	@Override
 	public
 	boolean createIndex(String collection, String field, int type)
 		throws Exception
@@ -1062,6 +1087,7 @@ class NoSQLElasticsearch implements INoSQLDB
 		return result;
 	}
 	
+	@Override
 	public 
 	List<Map<String,Object>> listIndexes(String collection) 
 		throws Exception
@@ -1072,6 +1098,7 @@ class NoSQLElasticsearch implements INoSQLDB
 		return listResult;
 	}
 	
+	@Override
 	public
 	String writeFile(String filename, byte[] content, Map<String,?> mapMetadata)
 		throws Exception
@@ -1108,6 +1135,7 @@ class NoSQLElasticsearch implements INoSQLDB
 		return id;
 	}
 	
+	@Override
 	public
 	List<Map<String,Object>> findFiles(String filename, Map<String,?> mapMetadata)
 		throws Exception
@@ -1132,6 +1160,7 @@ class NoSQLElasticsearch implements INoSQLDB
 		return listResult;
 	}
 	
+	@Override
 	public
 	Map<String,Object> readFile(String filename)
 		throws Exception
@@ -1155,6 +1184,7 @@ class NoSQLElasticsearch implements INoSQLDB
 		return map0;
 	}
 	
+	@Override
 	public
 	boolean removeFile(String filename)
 		throws Exception
@@ -1170,6 +1200,7 @@ class NoSQLElasticsearch implements INoSQLDB
 		return result;
 	}
 	
+	@Override
 	public
 	boolean renameFile(String filename, String newFilename)
 		throws Exception

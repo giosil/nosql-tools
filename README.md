@@ -1,6 +1,6 @@
 # NOSQL-Tools
 
-A set of tools for manage NOSQL databases.
+A set of tools to manage NOSQL databases.
 
 ## Tools available
 

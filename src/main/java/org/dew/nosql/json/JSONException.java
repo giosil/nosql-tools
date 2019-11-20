@@ -7,35 +7,35 @@ package org.dew.nosql.json;
  * @version 2013-02-10
  */
 public class JSONException extends RuntimeException {
-	private static final long serialVersionUID = 0;
-	private Throwable cause;
-	
-	/**
-	 * Constructs a JSONException with an explanatory message.
-	 *
-	 * @param message Detail about the reason for the exception.
-	 */
-	public JSONException(String message) {
-		super(message);
-	}
-	
-	/**
-	 * Constructs a new JSONException with the specified cause.
-	 * 
-	 * @param cause Throwable instance
-	 */
-	public JSONException(Throwable cause) {
-		super(cause.getMessage());
-		this.cause = cause;
-	}
-	
-	/**
-	 * Returns the cause of this exception or null if the cause is nonexistent
-	 * or unknown.
-	 *
-	 * @return the cause of this exception or null if the cause is nonexistent or unknown.
-	 */
-	public Throwable getCause() {
-		return this.cause;
-	}
+  private static final long serialVersionUID = 0;
+  private Throwable cause;
+  
+  /**
+   * Constructs a JSONException with an explanatory message.
+   *
+   * @param message Detail about the reason for the exception.
+   */
+  public JSONException(String message) {
+    super(message);
+  }
+  
+  /**
+   * Constructs a new JSONException with the specified cause.
+   * 
+   * @param cause Throwable instance
+   */
+  public JSONException(Throwable cause) {
+    super(cause.getMessage());
+    this.cause = cause;
+  }
+  
+  /**
+   * Returns the cause of this exception or null if the cause is nonexistent
+   * or unknown.
+   *
+   * @return the cause of this exception or null if the cause is nonexistent or unknown.
+   */
+  public Throwable getCause() {
+    return this.cause;
+  }
 }

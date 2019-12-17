@@ -101,11 +101,16 @@ class NoSQLDataSource
     INoSQLDB noSQLDB = null;
     if (type == null || type.length() == 0) {
       noSQLDB = new NoSQLMongoDB3(dbName);
-    } else {
-      char c0 = type.charAt(0);
-      if (c0 == 'E' || c0 == 'e') {
+    } 
+    else {
+      type = type.toLowerCase();
+      if (type.startsWith("ela")) {
         noSQLDB = new NoSQLElasticsearch(dbName);
-      } else {
+      } 
+      else if (type.startsWith("moc") || type.startsWith("mem")) {
+        noSQLDB = new NoSQLMock(dbName);
+      } 
+      else {
         noSQLDB = new NoSQLMongoDB3(dbName);
       }
     }

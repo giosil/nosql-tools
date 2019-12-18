@@ -57,7 +57,7 @@ class NoSQLMock implements INoSQLDB
       this.dbname = dbname;
     }
     else {
-      dbname = NoSQLDataSource.getProperty("nosqldb.dbname",  NoSQLDataSource.getProperty("nosqldb.dbauth"));
+      this.dbname = NoSQLDataSource.getProperty("nosqldb.dbname",  NoSQLDataSource.getProperty("nosqldb.dbauth"));
     }
     if(this.dbname == null || this.dbname.length() == 0) {
       this.dbname = "default";

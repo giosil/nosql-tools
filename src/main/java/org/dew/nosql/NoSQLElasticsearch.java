@@ -1447,8 +1447,7 @@ class NoSQLElasticsearch implements INoSQLDB
       if(boNE) {
         sbQ.append(enc("NOT " + sKey) + ":" + enc(sVal.replace("/", "\\/")));
       }
-      else
-      if(boGT) {
+      else if(boGT) {
         String b = "]";
         Object oVal2 = findVal(mapFilter, "<=", sKey);
         if(oVal2 == null) {
@@ -1463,8 +1462,7 @@ class NoSQLElasticsearch implements INoSQLDB
           sbQ.append(enc(sKey) + ":" + enc(">" + sVal));
         }
       }
-      else
-      if(boLT) {
+      else if(boLT) {
         String b = "[";
         Object oVal2 = findVal(mapFilter, ">=", sKey);
         if(oVal2 == null) {
@@ -1479,8 +1477,7 @@ class NoSQLElasticsearch implements INoSQLDB
           sbQ.append(enc(sKey) + ":" + enc("<" + sVal));
         }
       }
-      else
-      if(boGTE) {
+      else if(boGTE) {
         String b = "]";
         Object oVal2 = findVal(mapFilter, "<=", sKey);
         if(oVal2 == null) {
@@ -1495,8 +1492,7 @@ class NoSQLElasticsearch implements INoSQLDB
           sbQ.append(enc(sKey) + ":" + enc(">=" + sVal));
         }
       }
-      else
-      if(boLTE) {
+      else if(boLTE) {
         String b = "[";
         Object oVal2 = findVal(mapFilter, ">=", sKey);
         if(oVal2 == null) {
@@ -1516,12 +1512,10 @@ class NoSQLElasticsearch implements INoSQLDB
           if(boStartsWithPerc && boEndsWithPerc) {
             sbQ.append(enc(sKey) + ":" + enc("/.*" + sVal.replace("/", "\\/").replace(",", "").replace("%", ".*") + ".*/"));
           }
-          else
-          if(boStartsWithPerc) {
+          else if(boStartsWithPerc) {
             sbQ.append(enc(sKey) + ":" + enc("/.*" + sVal.replace("/", "\\/").replace(",", "").replace("%", ".*") + "/"));
           }
-          else
-          if(boEndsWithPerc) {
+          else if(boEndsWithPerc) {
             sbQ.append(enc(sKey) + ":" + enc("/" + sVal.replace("/", "\\/").replace(",", "").replace("%", ".*") + ".*/"));
           }
         }

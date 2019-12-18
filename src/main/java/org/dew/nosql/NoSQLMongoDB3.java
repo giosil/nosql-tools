@@ -1322,8 +1322,7 @@ class NoSQLMongoDB3 implements INoSQLDB
           result.put(sKey, new BasicDBObject("$ne", value));
         }
       }
-      else
-      if(boGT) {
+      else if(boGT) {
         Object prev = result.get(sKey);
         if(prev instanceof BasicDBObject) {
           ((BasicDBObject) prev).put("$gt", value);
@@ -1332,8 +1331,7 @@ class NoSQLMongoDB3 implements INoSQLDB
           result.put(sKey, new BasicDBObject("$gt", value));
         }
       }
-      else
-      if(boLT) {
+      else if(boLT) {
         Object prev = result.get(sKey);
         if(prev instanceof BasicDBObject) {
           ((BasicDBObject) prev).put("$lt", value);
@@ -1342,8 +1340,7 @@ class NoSQLMongoDB3 implements INoSQLDB
           result.put(sKey, new BasicDBObject("$lt", value));
         }
       }
-      else
-      if(boGTE) {
+      else if(boGTE) {
         Object prev = result.get(sKey);
         if(prev instanceof BasicDBObject) {
           ((BasicDBObject) prev).put("$gte", value);
@@ -1352,8 +1349,7 @@ class NoSQLMongoDB3 implements INoSQLDB
           result.put(sKey, new BasicDBObject("$gte", value));
         }
       }
-      else
-      if(boLTE) {
+      else if(boLTE) {
         Object prev = result.get(sKey);
         if(prev instanceof BasicDBObject) {
           ((BasicDBObject) prev).put("$lte", value);

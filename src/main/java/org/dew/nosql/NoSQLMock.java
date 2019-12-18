@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
-
 import java.net.NetworkInterface;
 import java.net.URL;
 
@@ -1446,7 +1445,7 @@ class NoSQLMock implements INoSQLDB
         }
       }
       
-      Object ivl = mapItem.get(sKey);
+      Object ivl = get(mapItem, sKey);
       int cmp = 0;
       if(ivl == null && val == null) {
         cmp = 0; // equals
@@ -1496,41 +1495,35 @@ class NoSQLMock implements INoSQLDB
         if(val == null && ivl == null)     return false;
         if(val != null && val.equals(ivl)) return false;
       }
-      else
-        if(boGT) {
-          if(cmp < 1) return false;
-        }
-        else
-          if(boLT) {
-            if(cmp > -1) return false;
+      else if(boGT) {
+        if(cmp < 1) return false;
+      }
+      else if(boLT) {
+        if(cmp > -1) return false;
+      }
+      else if(boGTE) {
+        if(cmp == -1) return false;
+      }
+      else if(boLTE) {
+        if(cmp == 1) return false;
+      }
+      else {
+        if(boStartsWithPerc || boEndsWithPerc) {
+          String sIvl = WUtil.toString(ivl, "null");
+          if(boStartsWithPerc && boEndsWithPerc) {
+            if(sIvl.indexOf(sIvl) < 0) return false;
           }
-          else
-            if(boGTE) {
-              if(cmp == -1) return false;
-            }
-            else
-              if(boLTE) {
-                if(cmp == 1) return false;
-              }
-              else {
-                if(boStartsWithPerc || boEndsWithPerc) {
-                  String sIvl = WUtil.toString(ivl, "null");
-                  if(boStartsWithPerc && boEndsWithPerc) {
-                    if(sIvl.indexOf(sIvl) < 0) return false;
-                  }
-                  else
-                    if(boStartsWithPerc) {
-                      if(!sIvl.endsWith(sVal)) return false;
-                    }
-                    else
-                      if(boEndsWithPerc) {
-                        if(!sIvl.startsWith(sVal)) return false;
-                      }
-                }
-                else {
-                  if(cmp != 0) return false;
-                }
-              }
+          else if(boStartsWithPerc) {
+            if(!sIvl.endsWith(sVal)) return false;
+          }
+          else if(boEndsWithPerc) {
+            if(!sIvl.startsWith(sVal)) return false;
+          }
+        }
+        else {
+          if(cmp != 0) return false;
+        }
+      }
     }
     return true;
   }
@@ -1550,6 +1543,26 @@ class NoSQLMock implements INoSQLDB
     if(sText == null || text == null) return false;
     
     return sText.toLowerCase().indexOf(text.toLowerCase()) >= 0;
+  }
+  
+  protected static 
+  Object get(Map src, String keysrc) 
+  {
+    Object  valsrc = null;
+    int iSep = keysrc.indexOf('.');
+    if(iSep > 0) {
+      String key1 = keysrc.substring(0, iSep);
+      Object val1 = get(src, key1);
+      if(val1 instanceof Map) {
+        Map map1 = (Map) val1;
+        String key2 = keysrc.substring(iSep + 1);
+        valsrc = get(map1, key2);
+      }
+    }
+    else {
+      valsrc = src.get(keysrc);
+    }
+    return valsrc;
   }
   
   protected static

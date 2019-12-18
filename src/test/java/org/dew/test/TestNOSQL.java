@@ -30,6 +30,7 @@ public class TestNOSQL extends TestCase {
       nosqlDB.insert("users", buildMap("name", "GIUSEPPE", "family", "VERDI",   "age", 40, "city", "ROME"));
       nosqlDB.insert("users", buildMap("name", "ANTONIO",  "family", "BIANCHI", "age", 28, "city", "ROME"));
       nosqlDB.insert("users", buildMap("name", "CARLO",    "family", "GIALLI",  "age", 36, "city", "LONDON"));
+      nosqlDB.insert("users", buildMap("name", "ROBERTO",  "family", "NERI",    "age", 32, "city", "LONDON"));
       
       System.out.println("nosqlDB.getCollections...");
       List<String> collections = nosqlDB.getCollections();

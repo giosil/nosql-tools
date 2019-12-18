@@ -82,6 +82,32 @@ class NoSQLMongoDB2 implements INoSQLDB
   }
   
   @Override
+  public 
+  Map<String,Object> startup(Map<String,Object> mapOptions)
+    throws Exception
+  {
+    if(debug) System.out.println(logprefix + "startup(" + mapOptions + ")...");
+    
+    Map<String,Object> mapResult = getInfo();
+    
+    if(debug) System.out.println(logprefix + "startup(" + mapOptions + ") -> " + mapResult);
+    return mapResult;
+  }
+  
+  @Override
+  public 
+  boolean shutdown(Map<String,Object> mapOptions)
+    throws Exception
+  {
+    if(debug) System.out.println(logprefix + "shutdown(" + mapOptions + ")...");
+    
+    boolean result = false;
+    
+    if(debug) System.out.println(logprefix + "shutdown(" + mapOptions + ") -> " + result);
+    return result;
+  }
+  
+  @Override
   public
   Map<String,Object> getInfo()
     throws Exception

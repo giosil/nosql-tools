@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.dew.nosql.json.JSON;
 import org.dew.nosql.util.Base64Coder;
 
 import org.dew.nosql.util.WUtil;
@@ -58,8 +59,8 @@ class NoSQLMock implements INoSQLDB
     else {
       dbname = NoSQLDataSource.getProperty("nosqldb.dbname",  NoSQLDataSource.getProperty("nosqldb.dbauth"));
     }
-    if(dbname == null || dbname.length() == 0) {
-      dbname = "default";
+    if(this.dbname == null || this.dbname.length() == 0) {
+      this.dbname = "default";
     }
   }
   
@@ -78,11 +79,160 @@ class NoSQLMock implements INoSQLDB
   }
   
   @Override
+  public 
+  Map<String,Object> startup(Map<String,Object> mapOptions)
+    throws Exception
+  {
+    if(debug) System.out.println(logprefix + "startup(" + mapOptions + ")...");
+    
+    // Check data file
+    String filePath = "";
+    int countDb = 0;
+    int countCo = 1;
+    if(mapOptions != null) {
+      String sFileName = WUtil.toString(mapOptions.get(FILE_NAME), null);
+      if(sFileName != null && sFileName.length() > 1) {
+        char c0 = sFileName.charAt(0);
+        char c1 = sFileName.charAt(1);
+        if(c0 == '/' || c1 == ':') {
+          filePath = sFileName;
+        }
+        else {
+          filePath = System.getProperty("user.home") + File.separator + sFileName;
+        }
+      }
+    }
+    if(filePath == null || filePath.length() == 0) {
+      filePath = System.getProperty("user.home") + File.separator + "nosqlmock.json";
+    }
+    
+    // Load content
+    Map<String,Object> mapContent = null;
+    File file = new File(filePath);
+    if(file.exists()) {
+      byte[] content = readContent(filePath);
+      if(content != null && content.length > 0) {
+        String sContent = new String(content);
+        mapContent = JSON.parseObj(sContent);
+      }
+    }
+    
+    // Check content
+    if(mapContent == null || mapContent.isEmpty()) {
+      if(debug) System.out.println(logprefix + "startup(" + mapOptions + ") no data available.");
+      Map<String,Object> mapResult = getInfo();
+      if(debug) System.out.println(logprefix + "startup(" + mapOptions + ") -> " + mapResult);
+      return mapResult;
+    }
+    
+    // Clear data
+    if(data == null) data = new HashMap<String, Map<String,List<Map<String,Object>>>>();
+    data.clear();
+    
+    // Import data
+    Iterator<Map.Entry<String, Object>> iteratorDB = mapContent.entrySet().iterator();
+    while(iteratorDB.hasNext()) {
+      Map.Entry<String, Object> entryDB = iteratorDB.next();
+      
+      String sDatabase   = entryDB.getKey();
+      Object collections = entryDB.getValue();
+      
+      // Check database data
+      if(sDatabase.length() == 0) continue;
+      if(!(collections instanceof Map)) continue;
+      Map<String,Object> mapCollections = WUtil.toMapObject(collections);
+      if(mapCollections == null) continue;
+      
+      Iterator<Map.Entry<String, Object>> iteratorCol = mapCollections.entrySet().iterator();
+      while(iteratorCol.hasNext()) {
+        Map.Entry<String, Object> entryCol = iteratorCol.next();
+        
+        String sCollection    = entryCol.getKey();
+        Object collectionData = entryCol.getValue();
+        
+        // Check collection data
+        if(sCollection.length() == 0) continue;
+        if(!(collectionData instanceof List)) continue;
+        List<Map<String,Object>> listCollectionData = WUtil.toListOfMapObject(collectionData);
+        if(listCollectionData == null) continue;
+        
+        Map<String,List<Map<String,Object>>> mapDBDataCollection = data.get(sDatabase);
+        if(mapDBDataCollection == null) {
+          mapDBDataCollection = new HashMap<String, List<Map<String,Object>>>();
+          data.put(sDatabase, mapDBDataCollection);
+          countDb++;
+          if(debug) System.out.println(logprefix + "startup(" + mapOptions + ") import database " + sDatabase + "...");
+        }
+        
+        mapDBDataCollection.put(sCollection, listCollectionData);
+        countCo++;
+        if(debug) System.out.println(logprefix + "startup(" + mapOptions + ") import collection " + sDatabase + "." + sCollection + "...");
+      }
+    }
+    
+    if(debug) System.out.println(logprefix + "startup(" + mapOptions + ") imported databases: " + countDb + ", collections: " + countCo);
+    
+    Map<String,Object> mapResult = getInfo();
+    
+    if(debug) System.out.println(logprefix + "startup(" + mapOptions + ") -> " + mapResult);
+    return mapResult;
+  }
+  
+  @Override
+  public 
+  boolean shutdown(Map<String,Object> mapOptions)
+    throws Exception
+  {
+    if(debug) System.out.println(logprefix + "shutdown(" + mapOptions + ")...");
+    
+    boolean result = false;
+    
+    if(data == null) data = new HashMap<String, Map<String,List<Map<String,Object>>>>();
+    
+    // Check data file
+    String filePath = "";
+    if(mapOptions != null) {
+      String sFileName = WUtil.toString(mapOptions.get(FILE_NAME), null);
+      if(sFileName != null && sFileName.length() > 1) {
+        char c0 = sFileName.charAt(0);
+        char c1 = sFileName.charAt(1);
+        if(c0 == '/' || c1 == ':') {
+          filePath = sFileName;
+        }
+        else {
+          filePath = System.getProperty("user.home") + File.separator + sFileName;
+        }
+      }
+    }
+    if(filePath == null || filePath.length() == 0) {
+      filePath = System.getProperty("user.home") + File.separator + "nosqlmock.json";
+    }
+    
+    // Write File
+    try {
+      String jsonData = JSON.stringify(data);
+      
+      saveContent(new String(jsonData).getBytes(), filePath);
+      
+      result = true;
+    }
+    catch(Exception ex) {
+      if(debug) System.out.println(logprefix + "shutdown(" + mapOptions + "): " + ex);
+      result = false;
+    }
+    
+    if(debug) System.out.println(logprefix + "shutdown(" + mapOptions + ") -> " + result);
+    return result;
+  }
+  
+  @Override
   public
   Map<String,Object> getInfo()
       throws Exception
   {
     if(debug) System.out.println(logprefix + "getInfo()...");
+    
+    if(data == null) data = new HashMap<String, Map<String,List<Map<String,Object>>>>();
     
     Map<String,Object> mapResult = new HashMap<String,Object>(2);
     mapResult.put("name",    "Mock");
@@ -98,6 +248,8 @@ class NoSQLMock implements INoSQLDB
       throws Exception
   {
     if(debug) System.out.println(logprefix + "getCollections()...");
+    
+    if(data == null) data = new HashMap<String, Map<String,List<Map<String,Object>>>>();
     
     List<String> listResult = new ArrayList<String>();
     
@@ -121,6 +273,8 @@ class NoSQLMock implements INoSQLDB
   {
     if(debug) System.out.println(logprefix + "drop(" + collection + ")...");
     boolean result = false;
+    
+    if(data == null) data = new HashMap<String, Map<String,List<Map<String,Object>>>>();
     
     if(collection != null && collection.length() > 0) {
       Map<String,List<Map<String,Object>>> mapColData = data.get(dbname);
@@ -1177,6 +1331,8 @@ class NoSQLMock implements INoSQLDB
   List<Map<String,Object>> getCollectionData(String dbname, String collection)
   {
     List<Map<String,Object>> listColData = null;
+    
+    if(data == null) data = new HashMap<String, Map<String,List<Map<String,Object>>>>();
     
     Map<String,List<Map<String,Object>>> mapColData = data.get(dbname);
     if(mapColData == null) {

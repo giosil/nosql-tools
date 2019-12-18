@@ -19,6 +19,10 @@ interface INoSQLDB
   
   public boolean isDebug();
   
+  public Map<String,Object> startup(Map<String,Object> mapOptions) throws Exception;
+  
+  public boolean shutdown(Map<String,Object> mapOptions) throws Exception;
+  
   public Map<String,Object> getInfo() throws Exception;
   
   public List<String> getCollections() throws Exception;

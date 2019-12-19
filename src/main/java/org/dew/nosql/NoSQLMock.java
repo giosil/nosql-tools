@@ -101,7 +101,20 @@ class NoSQLMock implements INoSQLDB
     String filePath = "";
     if(mapOptions != null) {
       String sFileName = WUtil.toString(mapOptions.get(FILE_NAME), null);
-      if(sFileName != null && sFileName.length() > 1) {
+      if(sFileName != null && sFileName.equals("-")) {
+        // Clear data
+        if(data == null) data = new HashMap<String, Map<String,List<Map<String,Object>>>>();
+        data.clear();
+        Map<String,Object> mapResult = getInfo();
+        if(mapResult != null) {
+          mapResult.put("databases", 0);
+          mapResult.put("collections", 0);
+          mapResult.put("records", 0);
+        }
+        if(debug) System.out.println(logprefix + "load(" + mapOptions + ") -> " + mapResult);
+        return mapResult;
+      }
+      if(sFileName != null && sFileName.length() > 0) {
         char c0 = sFileName.charAt(0);
         char c1 = sFileName.charAt(1);
         if(c0 == '/' || c1 == ':') {

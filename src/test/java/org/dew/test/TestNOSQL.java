@@ -37,7 +37,7 @@ public class TestNOSQL extends TestCase {
       printList("collections:", collections);
       
       System.out.println("nosqlDB.find...");
-      List<Map<String,Object>> listResult = nosqlDB.find("users", buildMap("name", "MARIO"), "*");
+      List<Map<String,Object>> listResult = nosqlDB.find("users", buildMap("name", "M%"), "*");
       printList("find result:", listResult);
       
       System.out.println("nosqlDB.update...");

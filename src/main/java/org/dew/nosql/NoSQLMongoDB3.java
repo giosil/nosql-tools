@@ -98,27 +98,27 @@ class NoSQLMongoDB3 implements INoSQLDB
   
   @Override
   public 
-  Map<String,Object> startup(Map<String,Object> mapOptions)
+  Map<String,Object> load(Map<String,Object> mapOptions)
     throws Exception
   {
-    if(debug) System.out.println(logprefix + "startup(" + mapOptions + ")...");
+    if(debug) System.out.println(logprefix + "load(" + mapOptions + ")...");
     
     Map<String,Object> mapResult = getInfo();
     
-    if(debug) System.out.println(logprefix + "startup(" + mapOptions + ") -> " + mapResult);
+    if(debug) System.out.println(logprefix + "load(" + mapOptions + ") -> " + mapResult);
     return mapResult;
   }
   
   @Override
   public 
-  boolean shutdown(Map<String,Object> mapOptions)
+  boolean save(Map<String,Object> mapOptions)
     throws Exception
   {
-    if(debug) System.out.println(logprefix + "shutdown(" + mapOptions + ")...");
+    if(debug) System.out.println(logprefix + "save(" + mapOptions + ")...");
     
     boolean result = false;
     
-    if(debug) System.out.println(logprefix + "shutdown(" + mapOptions + ") -> " + result);
+    if(debug) System.out.println(logprefix + "save(" + mapOptions + ") -> " + result);
     return result;
   }
   

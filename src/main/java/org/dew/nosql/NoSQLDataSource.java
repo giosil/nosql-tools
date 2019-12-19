@@ -82,13 +82,13 @@ class NoSQLDataSource
     if(sResult == null || sResult.length() == 0) {
       sResult = getProperty("nosqldb.url");
     }
-    String sDbName = "fse";
-    int iLastSep = sResult.lastIndexOf('/');
+    String sDbName = "default";
+    int iLastSep = sResult != null ? sResult.lastIndexOf('/') : -1;
     if(iLastSep > 0) {
       sDbName = sResult.substring(iLastSep + 1);
       int iSepOpt = sDbName.indexOf('?');
       if(iSepOpt > 0) sDbName = sDbName.substring(0, iSepOpt);
-      if(sDbName.equalsIgnoreCase("admin")) sDbName = "fse";
+      if(sDbName.equalsIgnoreCase("admin")) sDbName = "default";
     }
     return sDbName;
   }
@@ -97,21 +97,21 @@ class NoSQLDataSource
   INoSQLDB getDefaultNoSQLDB(String dbName) 
     throws Exception 
   {
-    String type = getProperty("nosqldb.type", "mongodb");
+    String type = getProperty("nosqldb.type");
     INoSQLDB noSQLDB = null;
     if (type == null || type.length() == 0) {
-      noSQLDB = new NoSQLMongoDB3(dbName);
+      noSQLDB = new NoSQLMock(dbName);
     } 
     else {
       type = type.toLowerCase();
       if (type.startsWith("ela")) {
         noSQLDB = new NoSQLElasticsearch(dbName);
       } 
-      else if (type.startsWith("moc") || type.startsWith("mem")) {
-        noSQLDB = new NoSQLMock(dbName);
+      else if (type.startsWith("mon")) {
+        noSQLDB = new NoSQLMongoDB3(dbName);
       } 
       else {
-        noSQLDB = new NoSQLMongoDB3(dbName);
+        noSQLDB = new NoSQLMock(dbName);
       }
     }
     noSQLDB.setDebug(DEBUG);

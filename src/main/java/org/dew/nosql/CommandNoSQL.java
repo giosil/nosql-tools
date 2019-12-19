@@ -111,11 +111,13 @@ class CommandNoSQL
           sCommand = sCommand.substring(0, sCommand.length()-1);
         }
         if(sCommand.equalsIgnoreCase("exit")) {
+          noSQLDB.save(null);
           System.out.println("bye");
           ps.println("bye at " + new Date());
           break;
         }
         if(sCommand.equalsIgnoreCase("bye"))  {
+          noSQLDB.save(null);
           System.out.println("bye");
           ps.println("bye at " + new Date());
           break;

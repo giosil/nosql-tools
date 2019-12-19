@@ -40,13 +40,26 @@ class NoSQLMock implements INoSQLDB
   protected String  dbname;
   protected boolean debug  = false;
   
+  protected static boolean firstload = false;
+  protected static String  defaultDatabase = "default";
   protected static Map<String,Map<String,List<Map<String,Object>>>> data = new HashMap<String, Map<String,List<Map<String,Object>>>>();
+  static {
+    if(!firstload) {
+      firstload = true;
+      try {
+        loadFile(null);
+      }
+      catch(Exception ex) {
+        System.err.println("NoSQLMock load: " + ex);
+      }
+    }
+  }
   
   public NoSQLMock()
   {
     dbname = NoSQLDataSource.getProperty("nosqldb.dbname",  NoSQLDataSource.getProperty("nosqldb.dbauth"));
     if(dbname == null || dbname.length() == 0) {
-      dbname = "default";
+      dbname = defaultDatabase;
     }
   }
   
@@ -59,7 +72,7 @@ class NoSQLMock implements INoSQLDB
       this.dbname = NoSQLDataSource.getProperty("nosqldb.dbname",  NoSQLDataSource.getProperty("nosqldb.dbauth"));
     }
     if(this.dbname == null || this.dbname.length() == 0) {
-      this.dbname = "default";
+      this.dbname = defaultDatabase;
     }
   }
   
@@ -79,15 +92,13 @@ class NoSQLMock implements INoSQLDB
   
   @Override
   public 
-  Map<String,Object> startup(Map<String,Object> mapOptions)
+  Map<String,Object> load(Map<String,Object> mapOptions)
     throws Exception
   {
-    if(debug) System.out.println(logprefix + "startup(" + mapOptions + ")...");
+    if(debug) System.out.println(logprefix + "load(" + mapOptions + ")...");
     
     // Check data file
     String filePath = "";
-    int countDb = 0;
-    int countCo = 1;
     if(mapOptions != null) {
       String sFileName = WUtil.toString(mapOptions.get(FILE_NAME), null);
       if(sFileName != null && sFileName.length() > 1) {
@@ -101,88 +112,40 @@ class NoSQLMock implements INoSQLDB
         }
       }
     }
-    if(filePath == null || filePath.length() == 0) {
-      filePath = System.getProperty("user.home") + File.separator + "nosqlmock.json";
-    }
     
-    // Load content
-    Map<String,Object> mapContent = null;
-    File file = new File(filePath);
-    if(file.exists()) {
-      byte[] content = readContent(filePath);
-      if(content != null && content.length > 0) {
-        String sContent = new String(content);
-        mapContent = JSON.parseObj(sContent);
-      }
-    }
+    int[] counts = loadFile(filePath);
     
-    // Check content
-    if(mapContent == null || mapContent.isEmpty()) {
-      if(debug) System.out.println(logprefix + "startup(" + mapOptions + ") no data available.");
+    if(counts == null || counts.length < 3 || counts[0] == 0) {
+      if(debug) System.out.println(logprefix + "load(" + mapOptions + ") no data available.");
       Map<String,Object> mapResult = getInfo();
-      if(debug) System.out.println(logprefix + "startup(" + mapOptions + ") -> " + mapResult);
+      if(mapResult != null) {
+        mapResult.put("databases", 0);
+        mapResult.put("collections", 0);
+        mapResult.put("records", 0);
+      }
+      if(debug) System.out.println(logprefix + "load(" + mapOptions + ") -> " + mapResult);
       return mapResult;
     }
     
-    // Clear data
-    if(data == null) data = new HashMap<String, Map<String,List<Map<String,Object>>>>();
-    data.clear();
-    
-    // Import data
-    Iterator<Map.Entry<String, Object>> iteratorDB = mapContent.entrySet().iterator();
-    while(iteratorDB.hasNext()) {
-      Map.Entry<String, Object> entryDB = iteratorDB.next();
-      
-      String sDatabase   = entryDB.getKey();
-      Object collections = entryDB.getValue();
-      
-      // Check database data
-      if(sDatabase.length() == 0) continue;
-      if(!(collections instanceof Map)) continue;
-      Map<String,Object> mapCollections = WUtil.toMapObject(collections);
-      if(mapCollections == null) continue;
-      
-      Iterator<Map.Entry<String, Object>> iteratorCol = mapCollections.entrySet().iterator();
-      while(iteratorCol.hasNext()) {
-        Map.Entry<String, Object> entryCol = iteratorCol.next();
-        
-        String sCollection    = entryCol.getKey();
-        Object collectionData = entryCol.getValue();
-        
-        // Check collection data
-        if(sCollection.length() == 0) continue;
-        if(!(collectionData instanceof List)) continue;
-        List<Map<String,Object>> listCollectionData = WUtil.toListOfMapObject(collectionData);
-        if(listCollectionData == null) continue;
-        
-        Map<String,List<Map<String,Object>>> mapDBDataCollection = data.get(sDatabase);
-        if(mapDBDataCollection == null) {
-          mapDBDataCollection = new HashMap<String, List<Map<String,Object>>>();
-          data.put(sDatabase, mapDBDataCollection);
-          countDb++;
-          if(debug) System.out.println(logprefix + "startup(" + mapOptions + ") import database " + sDatabase + "...");
-        }
-        
-        mapDBDataCollection.put(sCollection, listCollectionData);
-        countCo++;
-        if(debug) System.out.println(logprefix + "startup(" + mapOptions + ") import collection " + sDatabase + "." + sCollection + "...");
-      }
-    }
-    
-    if(debug) System.out.println(logprefix + "startup(" + mapOptions + ") imported databases: " + countDb + ", collections: " + countCo);
+    if(debug) System.out.println(logprefix + "load(" + mapOptions + ") imported databases: " + counts[0] + ", collections: " + counts[1] + ", records: " + counts[2]);
     
     Map<String,Object> mapResult = getInfo();
+    if(mapResult != null) {
+      mapResult.put("databases", counts[0]);
+      mapResult.put("collections", counts[1]);
+      mapResult.put("records", counts[2]);
+    }
     
-    if(debug) System.out.println(logprefix + "startup(" + mapOptions + ") -> " + mapResult);
+    if(debug) System.out.println(logprefix + "load(" + mapOptions + ") -> " + mapResult);
     return mapResult;
   }
   
   @Override
   public 
-  boolean shutdown(Map<String,Object> mapOptions)
+  boolean save(Map<String,Object> mapOptions)
     throws Exception
   {
-    if(debug) System.out.println(logprefix + "shutdown(" + mapOptions + ")...");
+    if(debug) System.out.println(logprefix + "save(" + mapOptions + ")...");
     
     boolean result = false;
     
@@ -216,11 +179,11 @@ class NoSQLMock implements INoSQLDB
       result = true;
     }
     catch(Exception ex) {
-      if(debug) System.out.println(logprefix + "shutdown(" + mapOptions + "): " + ex);
+      if(debug) System.out.println(logprefix + "save(" + mapOptions + "): " + ex);
       result = false;
     }
     
-    if(debug) System.out.println(logprefix + "shutdown(" + mapOptions + ") -> " + result);
+    if(debug) System.out.println(logprefix + "save(" + mapOptions + ") -> " + result);
     return result;
   }
   
@@ -1655,6 +1618,88 @@ class NoSQLMock implements INoSQLDB
     finally {
       if(fos != null) try{ fos.close(); } catch(Exception ex) {}
     }
+  }
+  
+  protected static 
+  int[] loadFile(String filePath)
+    throws Exception
+  {
+    // [0] = count database, [1] = count collections, [2] = count records
+    int[] result = {0, 0, 0};
+    
+    if(filePath == null || filePath.length() == 0) {
+      filePath = System.getProperty("user.home") + File.separator + "nosqlmock.json";
+    }
+    
+    String firstDatabase = null;
+    
+    // Load content
+    Map<String,Object> mapContent = null;
+    File file = new File(filePath);
+    if(file.exists()) {
+      byte[] content = readContent(filePath);
+      if(content != null && content.length > 0) {
+        String sContent = new String(content);
+        mapContent = JSON.parseObj(sContent);
+      }
+    }
+    
+    // Check content
+    if(mapContent == null || mapContent.isEmpty()) {
+      return result;
+    }
+    
+    // Clear data
+    if(data == null) data = new HashMap<String, Map<String,List<Map<String,Object>>>>();
+    data.clear();
+    
+    // Import data
+    Iterator<Map.Entry<String, Object>> iteratorDB = mapContent.entrySet().iterator();
+    while(iteratorDB.hasNext()) {
+      Map.Entry<String, Object> entryDB = iteratorDB.next();
+      
+      String sDatabase   = entryDB.getKey();
+      Object collections = entryDB.getValue();
+      
+      // Check database data
+      if(sDatabase.length() == 0) continue;
+      if(!(collections instanceof Map)) continue;
+      Map<String,Object> mapCollections = WUtil.toMapObject(collections);
+      if(mapCollections == null) continue;
+      
+      Iterator<Map.Entry<String, Object>> iteratorCol = mapCollections.entrySet().iterator();
+      while(iteratorCol.hasNext()) {
+        Map.Entry<String, Object> entryCol = iteratorCol.next();
+        
+        String sCollection    = entryCol.getKey();
+        Object collectionData = entryCol.getValue();
+        
+        // Check collection data
+        if(sCollection.length() == 0) continue;
+        if(!(collectionData instanceof List)) continue;
+        List<Map<String,Object>> listCollectionData = WUtil.toListOfMapObject(collectionData);
+        if(listCollectionData == null) continue;
+        
+        Map<String,List<Map<String,Object>>> mapDBDataCollection = data.get(sDatabase);
+        if(mapDBDataCollection == null) {
+          mapDBDataCollection = new HashMap<String, List<Map<String,Object>>>();
+          data.put(sDatabase, mapDBDataCollection);
+          result[0]++;
+          firstDatabase = sDatabase;
+        }
+        
+        mapDBDataCollection.put(sCollection, listCollectionData);
+        result[1]++;
+        
+        result[2] += listCollectionData.size();
+      }
+    }
+    
+    if(result[0] == 1 && firstDatabase != null && firstDatabase.length() > 0) {
+      defaultDatabase = firstDatabase;
+    }
+    
+    return result;
   }
   
   private static AtomicInteger _nextInc = new AtomicInteger((new java.util.Random()).nextInt());

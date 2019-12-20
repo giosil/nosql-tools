@@ -46,11 +46,22 @@ class NoSQLMock implements INoSQLDB
   static {
     if(!firstload) {
       firstload = true;
+      String filePath = null;
       try {
-        loadFile(null);
+        String sUrl = NoSQLDataSource.getProperty("nosqldb.uri");
+        if(sUrl == null) sUrl = NoSQLDataSource.getProperty("nosqldb.url");
+        if(sUrl != null && sUrl.length() > 0) {
+          if(sUrl.startsWith("file:///")) {
+            filePath = sUrl.substring(8); 
+          }
+          else {
+            filePath = sUrl;
+          }
+        }
+        loadFile(filePath);
       }
       catch(Exception ex) {
-        System.err.println("NoSQLMock load: " + ex);
+        System.err.println("NoSQLMock loadFile(" + filePath + "): " + ex);
       }
     }
   }

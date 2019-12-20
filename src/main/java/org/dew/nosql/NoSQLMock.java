@@ -272,7 +272,7 @@ class NoSQLMock implements INoSQLDB
     
     String result = generateId();
     
-    List<Map<String,Object>> listColData = getCollectionData(dbname, collection);
+    List<Map<String,Object>> listColData = getCollectionData(dbname, collection, true);
     
     Map<String,Object> mapItem = mapObject(mapData);
     mapItem.put("_id", result);
@@ -291,7 +291,7 @@ class NoSQLMock implements INoSQLDB
     
     String result = generateId();
     
-    List<Map<String,Object>> listColData = getCollectionData(dbname, collection);
+    List<Map<String,Object>> listColData = getCollectionData(dbname, collection, true);
     
     Map<String,Object> mapItem = mapObject(mapData);
     mapItem.put("_id", result);
@@ -324,7 +324,7 @@ class NoSQLMock implements INoSQLDB
       return 0;
     }
     
-    List<Map<String,Object>> listColData = getCollectionData(dbname, collection);
+    List<Map<String,Object>> listColData = getCollectionData(dbname, collection, true);
     
     int countIns = 0;
     for(int i = 0; i < listData.size(); i++) {
@@ -349,7 +349,7 @@ class NoSQLMock implements INoSQLDB
   {
     if(debug) System.out.println(logprefix + "replace(" + collection + "," + mapData + ")...");
     
-    List<Map<String,Object>> listColData = getCollectionData(dbname, collection);
+    List<Map<String,Object>> listColData = getCollectionData(dbname, collection, false);
     
     boolean result = false;
     for(int i = 0; i < listColData.size(); i++) {
@@ -380,7 +380,7 @@ class NoSQLMock implements INoSQLDB
       return 0;
     }
     
-    List<Map<String,Object>> listColData = getCollectionData(dbname, collection);
+    List<Map<String,Object>> listColData = getCollectionData(dbname, collection, false);
     
     int result = 0;
     for(int i = 0; i < listColData.size(); i++) {
@@ -412,7 +412,7 @@ class NoSQLMock implements INoSQLDB
     
     int countUpd = 0;
     
-    List<Map<String,Object>> listColData = getCollectionData(dbname, collection);
+    List<Map<String,Object>> listColData = getCollectionData(dbname, collection, false);
     
     for(int i = 0; i < listColData.size(); i++) {
       Map<String,Object> mapItem = listColData.get(i);
@@ -437,7 +437,7 @@ class NoSQLMock implements INoSQLDB
     
     String result = null;
     
-    List<Map<String,Object>> listColData = getCollectionData(dbname, collection);
+    List<Map<String,Object>> listColData = getCollectionData(dbname, collection, true);
     
     for(int i = 0; i < listColData.size(); i++) {
       Map<String,Object> mapItem = listColData.get(i);
@@ -469,7 +469,7 @@ class NoSQLMock implements INoSQLDB
     
     if(fields == null || fields.length() == 0) return 0;
     
-    List<Map<String,Object>> listColData = getCollectionData(dbname, collection);
+    List<Map<String,Object>> listColData = getCollectionData(dbname, collection, false);
     
     int result = 0;
     for(int i = 0; i < listColData.size(); i++) {
@@ -499,7 +499,7 @@ class NoSQLMock implements INoSQLDB
   {
     if(debug) System.out.println(logprefix + "inc(" + collection + "," + id + "," + field + "," + value + ")...");
     
-    List<Map<String,Object>> listColData = getCollectionData(dbname, collection);
+    List<Map<String,Object>> listColData = getCollectionData(dbname, collection, false);
     
     int result = 0;
     for(int i = 0; i < listColData.size(); i++) {
@@ -541,7 +541,7 @@ class NoSQLMock implements INoSQLDB
   {
     if(debug) System.out.println(logprefix + "inc(" + collection + "," + id + "," + field1 + "," + value1 + "," + field2 + "," + value2 + ")...");
     
-    List<Map<String,Object>> listColData = getCollectionData(dbname, collection);
+    List<Map<String,Object>> listColData = getCollectionData(dbname, collection, false);
     
     int result = 0;
     for(int i = 0; i < listColData.size(); i++) {
@@ -602,7 +602,7 @@ class NoSQLMock implements INoSQLDB
     
     int countUpd = 0;
     
-    List<Map<String,Object>> listColData = getCollectionData(dbname, collection);
+    List<Map<String,Object>> listColData = getCollectionData(dbname, collection, false);
     
     for(int i = 0; i < listColData.size(); i++) {
       Map<String,Object> mapItem = listColData.get(i);
@@ -642,7 +642,7 @@ class NoSQLMock implements INoSQLDB
     
     int countUpd = 0;
     
-    List<Map<String,Object>> listColData = getCollectionData(dbname, collection);
+    List<Map<String,Object>> listColData = getCollectionData(dbname, collection, false);
     
     for(int i = 0; i < listColData.size(); i++) {
       Map<String,Object> mapItem = listColData.get(i);
@@ -704,7 +704,7 @@ class NoSQLMock implements INoSQLDB
       return -1;
     }
     
-    List<Map<String,Object>> listColData = getCollectionData(dbname, collection);
+    List<Map<String,Object>> listColData = getCollectionData(dbname, collection, false);
     
     int iIndexOf = -1;
     for(int i = 0; i < listColData.size(); i++) {
@@ -741,7 +741,7 @@ class NoSQLMock implements INoSQLDB
     
     int iResult = 0;
     
-    List<Map<String,Object>> listColData = getCollectionData(dbname, collection);
+    List<Map<String,Object>> listColData = getCollectionData(dbname, collection, false);
     
     Iterator<Map<String,Object>> iterator = listColData.iterator();
     while(iterator.hasNext()) {
@@ -767,7 +767,7 @@ class NoSQLMock implements INoSQLDB
     
     List<Map<String,Object>> listResult = new ArrayList<Map<String,Object>>();
     
-    List<Map<String,Object>> listColData = getCollectionData(dbname, collection);
+    List<Map<String,Object>> listColData = getCollectionData(dbname, collection, false);
     
     Iterator<Map<String,Object>> iterator = listColData.iterator();
     while(iterator.hasNext()) {
@@ -790,7 +790,7 @@ class NoSQLMock implements INoSQLDB
     
     List<Map<String,Object>> listResult = new ArrayList<Map<String,Object>>();
     
-    List<Map<String,Object>> listColData = getCollectionData(dbname, collection);
+    List<Map<String,Object>> listColData = getCollectionData(dbname, collection, false);
     
     Iterator<Map<String,Object>> iterator = listColData.iterator();
     while(iterator.hasNext()) {
@@ -854,7 +854,7 @@ class NoSQLMock implements INoSQLDB
     
     List<Map<String,Object>> listResult = new ArrayList<Map<String,Object>>();
     
-    List<Map<String,Object>> listColData = getCollectionData(dbname, collection);
+    List<Map<String,Object>> listColData = getCollectionData(dbname, collection, false);
     
     Iterator<Map<String,Object>> iterator = listColData.iterator();
     while(iterator.hasNext()) {
@@ -904,7 +904,7 @@ class NoSQLMock implements INoSQLDB
     Map<Object,Object>  mapGroupBy = new HashMap<Object, Object>();
     Map<Object,Integer> mapCounts  = new HashMap<Object, Integer>();
     
-    List<Map<String,Object>> listColData = getCollectionData(dbname, collection);
+    List<Map<String,Object>> listColData = getCollectionData(dbname, collection, false);
     
     Iterator<Map<String,Object>> iterator = listColData.iterator();
     while(iterator.hasNext()) {
@@ -1036,7 +1036,7 @@ class NoSQLMock implements INoSQLDB
   {
     if(debug) System.out.println(logprefix + "read(" + collection + "," + id + ")...");
     
-    List<Map<String,Object>> listColData = getCollectionData(dbname, collection);
+    List<Map<String,Object>> listColData = getCollectionData(dbname, collection, false);
     
     for(int i = 0; i < listColData.size(); i++) {
       Map<String,Object> mapItem = listColData.get(i);
@@ -1061,7 +1061,7 @@ class NoSQLMock implements INoSQLDB
     
     int result = 0;
     
-    List<Map<String,Object>> listColData = getCollectionData(dbname, collection);
+    List<Map<String,Object>> listColData = getCollectionData(dbname, collection, false);
     
     Iterator<Map<String,Object>> iterator = listColData.iterator();
     while(iterator.hasNext()) {
@@ -1123,7 +1123,7 @@ class NoSQLMock implements INoSQLDB
     
     saveContent(content, filePath);
     
-    List<Map<String,Object>> listColData = getCollectionData(dbname, "fs.files");
+    List<Map<String,Object>> listColData = getCollectionData(dbname, "fs.files", true);
     
     Map<String,Object> mapFile = new HashMap<String, Object>();
     if(mapMetadata != null && !mapMetadata.isEmpty()) {
@@ -1157,7 +1157,7 @@ class NoSQLMock implements INoSQLDB
     
     List<Map<String,Object>> listResult = new ArrayList<Map<String,Object>>();
     
-    List<Map<String,Object>> listColData = getCollectionData(dbname, "fs.files");
+    List<Map<String,Object>> listColData = getCollectionData(dbname, "fs.files", false);
     
     Map<String,Object> mapFilter = new HashMap<String, Object>();
     if(mapMetadata != null && !mapMetadata.isEmpty()) {
@@ -1201,7 +1201,7 @@ class NoSQLMock implements INoSQLDB
       return new HashMap<String, Object>();
     }
     
-    List<Map<String,Object>> listColData = getCollectionData(dbname, "fs.files");
+    List<Map<String,Object>> listColData = getCollectionData(dbname, "fs.files", false);
     
     for(int i = 0; i < listColData.size(); i++) {
       Map<String,Object> mapItem = listColData.get(i);
@@ -1244,7 +1244,7 @@ class NoSQLMock implements INoSQLDB
       result = file.delete();
     }
     
-    List<Map<String,Object>> listColData = getCollectionData(dbname, "fs.files");
+    List<Map<String,Object>> listColData = getCollectionData(dbname, "fs.files", false);
     
     int iIndexOf = -1;
     for(int i = 0; i < listColData.size(); i++) {
@@ -1287,7 +1287,7 @@ class NoSQLMock implements INoSQLDB
       result = file.renameTo(new File(fileDest));
     }
     
-    List<Map<String,Object>> listColData = getCollectionData(dbname, "fs.files");
+    List<Map<String,Object>> listColData = getCollectionData(dbname, "fs.files", false);
     
     for(int i = 0; i < listColData.size(); i++) {
       Map<String,Object> mapItem = listColData.get(i);
@@ -1303,7 +1303,7 @@ class NoSQLMock implements INoSQLDB
   }
   
   protected static
-  List<Map<String,Object>> getCollectionData(String dbname, String collection)
+  List<Map<String,Object>> getCollectionData(String dbname, String collection, boolean createIfNotExists)
   {
     List<Map<String,Object>> listColData = null;
     
@@ -1311,6 +1311,9 @@ class NoSQLMock implements INoSQLDB
     
     Map<String,List<Map<String,Object>>> mapColData = data.get(dbname);
     if(mapColData == null) {
+      if(!createIfNotExists) {
+        return new ArrayList<Map<String,Object>>();
+      }
       mapColData = new HashMap<String,List<Map<String,Object>>>();
       data.put(dbname, mapColData);
       listColData = new ArrayList<Map<String,Object>>();
@@ -1319,6 +1322,9 @@ class NoSQLMock implements INoSQLDB
     else {
       listColData = mapColData.get(collection);
       if(listColData == null) {
+        if(!createIfNotExists) {
+          return new ArrayList<Map<String,Object>>();
+        }
         listColData = new ArrayList<Map<String,Object>>();
         mapColData.put(collection, listColData);
       }

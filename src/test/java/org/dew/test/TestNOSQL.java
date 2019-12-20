@@ -24,41 +24,33 @@ public class TestNOSQL extends TestCase {
   public void testApp() {
     try {
       INoSQLDB nosqlDB = new NoSQLMock();
+      nosqlDB.setDebug(true);
       
-      System.out.println("insert...");
       nosqlDB.insert("users", buildMap("name", "MARIO",    "family", "ROSSI",   "age", 44, "city", "ROME"));
       nosqlDB.insert("users", buildMap("name", "GIUSEPPE", "family", "VERDI",   "age", 40, "city", "ROME"));
       nosqlDB.insert("users", buildMap("name", "ANTONIO",  "family", "BIANCHI", "age", 28, "city", "ROME"));
       nosqlDB.insert("users", buildMap("name", "CARLO",    "family", "GIALLI",  "age", 36, "city", "LONDON"));
       nosqlDB.insert("users", buildMap("name", "ROBERTO",  "family", "NERI",    "age", 32, "city", "LONDON"));
       
-      System.out.println("nosqlDB.getCollections...");
       List<String> collections = nosqlDB.getCollections();
       printList("collections:", collections);
       
-      System.out.println("nosqlDB.find...");
       List<Map<String,Object>> listResult = nosqlDB.find("users", buildMap("name", "M%"), "*");
       printList("find result:", listResult);
       
-      System.out.println("nosqlDB.update...");
       nosqlDB.update("users", buildMap("age", 45), buildMap("name", "MARIO"));
       
-      System.out.println("nosqlDB.find...");
       listResult = nosqlDB.find("users", buildMap("name", "MARIO"), "*");
       printList("find result:", listResult);
       
-      System.out.println("nosqlDB.delete...");
       nosqlDB.delete("users", buildMap("name", "MARIO"));
       
-      System.out.println("nosqlDB.find...");
       listResult = nosqlDB.find("users", buildMap("name", "MARIO"), "*");
       printList("find result:", listResult);
       
-      System.out.println("nosqlDB.find...");
       listResult = nosqlDB.find("users", buildMap("age<", 30), "*");
       printList("find result:", listResult);
       
-      System.out.println("nosqlDB.group...");
       listResult = nosqlDB.group("users", new HashMap<String,Object>(), "city", "count");
       printList("group result:", listResult);
     }

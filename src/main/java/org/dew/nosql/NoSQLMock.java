@@ -49,10 +49,17 @@ class NoSQLMock implements INoSQLDB
       String filePath = null;
       try {
         String sUrl = NoSQLDataSource.getProperty("nosqldb.uri");
-        if(sUrl == null) sUrl = NoSQLDataSource.getProperty("nosqldb.url");
+        if(sUrl == null || sUrl.length() == 0) {
+          sUrl = NoSQLDataSource.getProperty("nosqldb.url");
+        }
         if(sUrl != null && sUrl.length() > 0) {
           if(sUrl.startsWith("file:///")) {
-            filePath = sUrl.substring(8); 
+            if(sUrl.indexOf(':', 8) >= 0) {
+              filePath = sUrl.substring(8);  
+            }
+            else {
+              filePath = sUrl.substring(7);
+            }
           }
           else {
             filePath = sUrl;

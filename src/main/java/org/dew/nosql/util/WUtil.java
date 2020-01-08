@@ -1870,6 +1870,14 @@ class WUtil
     return list;
   }
   
+  // 1.5+
+  public static
+  List<Object> toListOfObject(Object object)
+  {
+    List list = toList(object, true);
+    return (List<Object>) list;
+  }
+  
   public static
   List collectionToNormalizedList(Collection collection)
   {

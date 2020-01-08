@@ -30,12 +30,11 @@ import org.dew.nosql.util.ListSorter;
 import org.dew.nosql.util.WMap;
 import org.dew.nosql.util.WUtil;
 
-@SuppressWarnings({"rawtypes","unchecked"})
 public
 class ReportExecutor
 {
   public static
-  Map execute(URL url, String fileName)
+  Map<String,Object> execute(URL url, String fileName)
   {
     if(url == null || fileName == null) {
       return buildDefaultResult(fileName + " not found.");
@@ -60,7 +59,7 @@ class ReportExecutor
   }
   
   public static
-  Map execute(URL url, String fileName, Map parameters)
+  Map<String,Object> execute(URL url, String fileName, Map<String,Object> parameters)
   {
     if(url == null || fileName == null) {
       return buildDefaultResult(fileName + " not found.");
@@ -85,10 +84,10 @@ class ReportExecutor
   }
   
   public static
-  Map buildDefaultResult(String sMessage)
+  Map<String,Object> buildDefaultResult(String sMessage)
   {
     String[] array0Length = new String[0];
-    Map mapResult = new HashMap();
+    Map<String,Object> mapResult = new HashMap<String,Object>();
     mapResult.put("success", Boolean.FALSE);
     mapResult.put("message", sMessage);
     mapResult.put("labels",  array0Length);
@@ -102,9 +101,9 @@ class ReportExecutor
   }
   
   public static
-  Map executeJSON(URL url, WMap extParams)
+  Map<String,Object> executeJSON(URL url, WMap extParams)
   {
-    Map mapResult = buildDefaultResult("");
+    Map<String,Object> mapResult = buildDefaultResult("");
     long lBegin  = System.currentTimeMillis();
     // Parse file
     String sJSONContent  = "";
@@ -126,11 +125,11 @@ class ReportExecutor
       if(br != null) try{ br.close(); } catch(Exception ex) {}
       if(fr != null) try{ fr.close(); } catch(Exception ex) {}
     }
-    mapResult.putAll(extParams);
+    if(extParams != null) mapResult.putAll(extParams.toMapObject());
     if(sJSONContent != null && sJSONContent.length() > 0 && sJSONContent.startsWith("{")) {
       Object oMap = JSON.parse(sJSONContent);
       if(oMap instanceof Map) {
-        mapResult.putAll((Map) oMap);
+        mapResult.putAll(WUtil.toMapObject(oMap));
         long lElapsed = lBegin > 0 ? System.currentTimeMillis() - lBegin : 0l;
         mapResult.put("success", Boolean.TRUE);
         mapResult.put("message", "Report executed in " + lElapsed + " ms");
@@ -148,9 +147,9 @@ class ReportExecutor
   }
   
   public static
-  Map executeMAP(URL url, WMap extParams)
+  Map<String,Object> executeMAP(URL url, WMap extParams)
   {
-    Map mapResult = buildDefaultResult("");
+    Map<String,Object> mapResult = buildDefaultResult("");
     
     // Valori parametri dinamici
     Calendar cal = Calendar.getInstance();
@@ -266,36 +265,39 @@ class ReportExecutor
       sJSONConfig = sJSONConfig.replace("$MI",   sMI);
       sJSONConfig = sJSONConfig.replace("$SS",   sSS);
       Object oConfig = JSON.parse(sJSONConfig);
-      if(oConfig instanceof Map) mapResult.putAll((Map) oConfig);
+      if(oConfig instanceof Map) {
+        mapResult.putAll(WUtil.toMapObject(oConfig));
+      }
     }
-    mapResult.putAll(extParams);
+    if(extParams != null) mapResult.putAll(extParams.toMapObject());
     
     String[] asLabels = null;
-    List listRecords  = null;
-    List listData     = null;
+    List<List<Object>> listRecords  = null;
+    List<List<Object>> listData     = null;
     if(sJSONContent != null && sJSONContent.length() > 0 && sJSONContent.startsWith("[")) {
       Object oData = JSON.parse(sJSONContent);
       if(oData instanceof List) {
-        listData = (List) oData;
+        listData = WUtil.toListOfListObject(oData);
       }
     }
     else
       if(sJSONContent != null && sJSONContent.length() > 0 && sJSONContent.startsWith("{")) {
         Object oMap = JSON.parse(sJSONContent);
         if(oMap instanceof Map) {
-          mapResult.putAll((Map) oMap);
-          Object oData = ((Map) oMap).get("data");
+          Map<String,Object> mMap = WUtil.toMapObject(oMap);
+          mapResult.putAll(mMap);
+          Object oData = mMap.get("data");
           if(oData instanceof List) {
-            listData = (List) oData;
+            listData = WUtil.toListOfListObject(oData);
           }
         }
       }
-    if(listData == null) listData = new ArrayList(0);
+    if(listData == null) listData = new ArrayList<List<Object>>(0);
     listRecords = listData;
     if(listData.size() > 1) {
       Object oFirst = listData.remove(0);
       if(oFirst instanceof List) {
-        List listFirst = (List) oFirst;
+        List<Object> listFirst = WUtil.toListOfObject(oFirst);
         asLabels = new String[listFirst.size()];
         for(int i = 0; i < listFirst.size(); i++) {
           Object oLabel = listFirst.get(i);
@@ -311,9 +313,9 @@ class ReportExecutor
   }
   
   public static
-  Map executeCSV(URL url, WMap extParams)
+  Map<String,Object> executeCSV(URL url, WMap extParams)
   {
-    Map mapResult = buildDefaultResult("");
+    Map<String,Object> mapResult = buildDefaultResult("");
     
     // Valori parametri dinamici
     Calendar cal = Calendar.getInstance();
@@ -336,8 +338,8 @@ class ReportExecutor
     String sSS   = iSS < 10 ? "0" + iSS : String.valueOf(iSS);
     
     // Parse file
-    List listRecords     = new ArrayList();
-    List listHeader      = new ArrayList();
+    List<List<Object>> listRecords = new ArrayList<List<Object>>();
+    List<Object>       listHeader  = new ArrayList<Object>();
     String sDataObject   = null;
     String sJSONConfig   = "";
     String sSniType      = null;
@@ -410,7 +412,7 @@ class ReportExecutor
         }
         sLine = sLine.trim();
         if(sLine.length() > 0) {
-          ArrayList record = new ArrayList();
+          ArrayList<Object> record = new ArrayList<Object>();
           int iIndexOf = 0;
           int iBegin   = 0;
           iIndexOf     = sLine.indexOf(';');
@@ -474,9 +476,11 @@ class ReportExecutor
       sJSONConfig = sJSONConfig.replace("$MI",   sMI);
       sJSONConfig = sJSONConfig.replace("$SS",   sSS);
       Object oConfig = JSON.parse(sJSONConfig);
-      if(oConfig instanceof Map) mapResult.putAll((Map) oConfig);
+      if(oConfig instanceof Map) {
+        mapResult.putAll(WUtil.toMapObject(oConfig));
+      }
     }
-    mapResult.putAll(extParams);
+    if(extParams != null) mapResult.putAll(extParams.toMapObject());
     String[] asLabels = new String[listHeader.size()];
     for(int i = 0; i < listHeader.size(); i++) {
       asLabels[i] = (String) listHeader.get(i);
@@ -488,9 +492,9 @@ class ReportExecutor
   }
   
   public static
-  Map executeSQL(URL url, WMap extParams, Connection connection)
+  Map<String,Object> executeSQL(URL url, WMap extParams, Connection connection)
   {
-    Map mapResult = buildDefaultResult("");
+    Map<String,Object> mapResult = buildDefaultResult("");
     
     // Valori parametri dinamici
     Calendar cal = Calendar.getInstance();
@@ -657,18 +661,20 @@ class ReportExecutor
       sJSONConfig = sJSONConfig.replace("$MI",   sMI);
       sJSONConfig = sJSONConfig.replace("$SS",   sSS);
       if(sJSONConfig.indexOf('&') > 0) {
-        Iterator iterator = intParams.entrySet().iterator();
+        Iterator<Map.Entry<String, Object>> iterator = intParams.toMapObject().entrySet().iterator();
         while(iterator.hasNext()) {
-          Map.Entry entry = (Map.Entry) iterator.next();
+          Map.Entry<String, Object> entry = iterator.next();
           String sKey = (String) entry.getKey();
           String sVal = (String) entry.getValue();
           sJSONConfig = sJSONConfig.replace("&" + sKey, sVal);
         }
       }
       Object oConfig = JSON.parse(sJSONConfig);
-      if(oConfig instanceof Map) mapResult.putAll((Map) oConfig);
+      if(oConfig instanceof Map) {
+        mapResult.putAll(WUtil.toMapObject(oConfig));
+      }
     }
-    mapResult.putAll(extParams);
+    if(extParams != null) mapResult.putAll(extParams.toMapObject());
     
     // Lettura dei parametri di split
     Object oSplitV  = mapResult.get("split");
@@ -686,8 +692,8 @@ class ReportExecutor
       }
     }
     
-    Map mapDateFormats = new HashMap();
-    Iterator iterator = extParams.keySet().iterator();
+    Map<Object,Object> mapDateFormats = new HashMap<Object,Object>();
+    Iterator<String> iterator = extParams.toMapObject().keySet().iterator();
     while(iterator.hasNext()) {
       Object oKey = iterator.next();
       String sKey = oKey.toString();
@@ -701,7 +707,7 @@ class ReportExecutor
         }
       }
     }
-    iterator = intParams.keySet().iterator();
+    iterator = intParams.toMapObject().keySet().iterator();
     while(iterator.hasNext()) {
       Object oKey = iterator.next();
       String sKey = oKey.toString();
@@ -724,7 +730,7 @@ class ReportExecutor
     if(iMaxLen == 0) iMaxLen = WUtil.toInt(mapResult.get("maxlen"), 0);
     
     // Execute
-    List<List> listRecords = null;
+    List<List<Object>> listRecords = null;
     int[] columnTypes      = null;
     String[] asLabels      = null;
     int iCols              = 0;
@@ -807,8 +813,8 @@ class ReportExecutor
                 }
               }
             }
-            List<List> listResult = readResultSet(rsV, iCols, columnTypes, sSplitValue, iMaxR, iMaxLen);
-            if(listRecords == null) listRecords = new ArrayList<List>();
+            List<List<Object>> listResult = readResultSet(rsV, iCols, columnTypes, sSplitValue, iMaxR, iMaxLen);
+            if(listRecords == null) listRecords = new ArrayList<List<Object>>();
             if(listResult  != null) listRecords.addAll(listResult);
             iMaxR = iMaxR - listResult.size();
             if(iMaxRows > 0 && iMaxR <= 0) break;
@@ -857,8 +863,8 @@ class ReportExecutor
               }
             }
           }
-          List<List> listResult = readResultSet(rsV, iCols, columnTypes, sSplitValue, iMaxR, iMaxLen);
-          if(listRecords == null) listRecords = new ArrayList<List> ();
+          List<List<Object>> listResult = readResultSet(rsV, iCols, columnTypes, sSplitValue, iMaxR, iMaxLen);
+          if(listRecords == null) listRecords = new ArrayList<List<Object>>();
           if(listResult  != null) listRecords.addAll(listResult);
           iMaxR = iMaxR - listResult.size();
           if(iMaxRows > 0 && iMaxR <= 0) break;
@@ -890,9 +896,9 @@ class ReportExecutor
   }
   
   public static
-  Map executeNoSQL(URL url, WMap extParams, INoSQLDB noSQLDBInstance)
+  Map<String,Object> executeNoSQL(URL url, WMap extParams, INoSQLDB noSQLDBInstance)
   {
-    Map mapResult = buildDefaultResult("");
+    Map<String,Object> mapResult = buildDefaultResult("");
     
     // Valori parametri dinamici
     Calendar cal = Calendar.getInstance();
@@ -1123,18 +1129,18 @@ class ReportExecutor
       sJSONConfig = sJSONConfig.replace("$MI",   sMI);
       sJSONConfig = sJSONConfig.replace("$SS",   sSS);
       if(sJSONConfig.indexOf('&') > 0) {
-        Iterator iterator = intParams.entrySet().iterator();
+        Iterator<Map.Entry<String, Object>> iterator = intParams.toMapObject().entrySet().iterator();
         while(iterator.hasNext()) {
-          Map.Entry entry = (Map.Entry) iterator.next();
+          Map.Entry<String, Object> entry = iterator.next();
           String sKey = (String) entry.getKey();
           String sVal = (String) entry.getValue();
           sJSONConfig = sJSONConfig.replace("&" + sKey, sVal);
         }
       }
-      Object oConfig = JSON.parse(sJSONConfig);
-      if(oConfig instanceof Map) mapResult.putAll((Map) oConfig);
+      Map<String,Object> mapConfig = JSON.parseObj(sJSONConfig);
+      if(mapConfig != null) mapResult.putAll(mapConfig);
     }
-    mapResult.putAll(extParams);
+    if(extParams != null) mapResult.putAll(extParams.toMapObject());
     
     // Lettura dei parametri di split
     Object oSplitV  = mapResult.get("split");
@@ -1152,8 +1158,8 @@ class ReportExecutor
       }
     }
     
-    Map mapDateFormats = new HashMap();
-    Iterator iterator = extParams.keySet().iterator();
+    Map<Object,Object> mapDateFormats = new HashMap<Object,Object>();
+    Iterator<String> iterator = extParams.toMapObject().keySet().iterator();
     while(iterator.hasNext()) {
       Object oKey = iterator.next();
       String sKey = oKey.toString();
@@ -1167,7 +1173,7 @@ class ReportExecutor
         }
       }
     }
-    iterator = intParams.keySet().iterator();
+    iterator = intParams.toMapObject().keySet().iterator();
     while(iterator.hasNext()) {
       Object oKey = iterator.next();
       String sKey = oKey.toString();
@@ -1206,7 +1212,7 @@ class ReportExecutor
     }
     
     // Execute
-    List<List> listRecords = new ArrayList<List>();
+    List<List<Object>> listRecords = new ArrayList<List<Object>>();
     String[] asLabels = null;
     INoSQLDB noSQLDB  = noSQLDBInstance;
     try {
@@ -1222,13 +1228,13 @@ class ReportExecutor
         sFilter = replaceFilterParameters(sFilter, extParams, intParams, mapDateFormats);
         
         if(!sFilter.startsWith("{")) sFilter = "{" + sFilter + "}";
-        try { mapFilter = (Map<String,Object>) JSON.parse(sFilter); } catch(Exception ex) {}
+        try { mapFilter = JSON.parseObj(sFilter); } catch(Exception ex) {}
         if(mapFilter == null) {
           mapFilter = new HashMap<String,Object>(); 
         }
       }
       if(extParams != null) {
-        Map<String,Object> mapFilterExt = new HashMap<String,Object>((Map<String,Object>) extParams);
+        Map<String,Object> mapFilterExt = new HashMap<String,Object>(extParams.toMapObject());
         mapFilterExt.remove("result");
         mapFilterExt.remove("max_rows");
         mapFilterExt.remove("max_len");
@@ -1313,12 +1319,12 @@ class ReportExecutor
   }
   
   private static
-  void prepareResult(Map mapResult, String[] asLabels, List listRecords, String sDataObject, String sConType, String sSnippet, long lBegin)
+  void prepareResult(Map<String,Object> mapResult, String[] asLabels, List<List<Object>> listRecords, String sDataObject, String sConType, String sSnippet, long lBegin)
   {
     long lElapsed = lBegin > 0 ? System.currentTimeMillis() - lBegin : 0l;
     try {
       if(asLabels    == null) asLabels    = new String[0];
-      if(listRecords == null) listRecords = new ArrayList(0);
+      if(listRecords == null) listRecords = new ArrayList<List<Object>>(0);
       
       boolean boPercentage = WUtil.toBoolean(mapResult.get("perc"), false);
       if(boPercentage) calcPercentages(listRecords);
@@ -1416,9 +1422,9 @@ class ReportExecutor
         }
       }
       if(sSnippet != null && sSnippet.length() > 1) {
-        Iterator iterator = mapResult.entrySet().iterator();
+        Iterator<Map.Entry<String, Object>> iterator = mapResult.entrySet().iterator();
         while(iterator.hasNext()) {
-          Map.Entry entry = (Map.Entry) iterator.next();
+          Map.Entry<String, Object> entry = iterator.next();
           String sKey  = entry.getKey().toString();
           int iIndexOf = sSnippet.indexOf("%" + sKey + "%");
           if(iIndexOf >= 0) {
@@ -1440,9 +1446,9 @@ class ReportExecutor
   }
   
   private static
-  String replaceParameters(String sSQL, WMap extParams, WMap intParams, Map mapDateFormats)
+  String replaceParameters(String sSQL, WMap extParams, WMap intParams, Map<Object,Object> mapDateFormats)
   {
-    Iterator iterator = extParams.keySet().iterator();
+    Iterator<String> iterator = extParams.toMapObject().keySet().iterator();
     while(iterator.hasNext()) {
       Object oKey = iterator.next();
       String sVal = null;
@@ -1464,7 +1470,7 @@ class ReportExecutor
       }
       sSQL = sSQL.replace("&" + oKey, sVal);
     }
-    iterator = intParams.keySet().iterator();
+    iterator = intParams.toMapObject().keySet().iterator();
     while(iterator.hasNext()) {
       Object oKey = iterator.next();
       String sVal = null;
@@ -1510,8 +1516,8 @@ class ReportExecutor
   }
   
   private static
-  String replaceParameters(String sSQL, int iCols, ResultSet rs, Map mapDateFormats)
-      throws Exception
+  String replaceParameters(String sSQL, int iCols, ResultSet rs, Map<Object,Object> mapDateFormats)
+    throws Exception
   {
     for(int i = 1; i <= iCols; i++) {
       String sVal = null;
@@ -1537,12 +1543,12 @@ class ReportExecutor
   }
   
   private static
-  String replaceFilterParameters(String sFilter, WMap extParams, WMap intParams, Map mapDateFormats)
+  String replaceFilterParameters(String sFilter, WMap extParams, WMap intParams, Map<Object,Object> mapDateFormats)
   {
     if(sFilter == null || sFilter.length() == 0) {
       return sFilter;
     }
-    Iterator iterator = extParams.keySet().iterator();
+    Iterator<String> iterator = extParams.toMapObject().keySet().iterator();
     while(iterator.hasNext()) {
       Object oKey = iterator.next();
       String sVal = null;
@@ -1561,7 +1567,7 @@ class ReportExecutor
       }
       sFilter = sFilter.replace("&" + oKey, sVal);
     }
-    iterator = intParams.keySet().iterator();
+    iterator = intParams.toMapObject().keySet().iterator();
     while(iterator.hasNext()) {
       Object oKey = iterator.next();
       String sVal = null;
@@ -1584,14 +1590,14 @@ class ReportExecutor
   }
   
   private static
-  List<List> readResultSet(ResultSet rs, int iCols, int[] columnTypes, String sSplitValue, int iMaxRows, int iMaxLen)
-      throws Exception
+  List<List<Object>> readResultSet(ResultSet rs, int iCols, int[] columnTypes, String sSplitValue, int iMaxRows, int iMaxLen)
+    throws Exception
   {
-    List<List> listRecords = new ArrayList<List> ();
+    List<List<Object>> listRecords = new ArrayList<List<Object>>();
     try {
       int iRows = 0;
       while(rs.next()) {
-        List listRecord = new ArrayList(iCols);
+        List<Object> listRecord = new ArrayList<Object>(iCols);
         for(int i = 0; i < iCols; i++) {
           int iType = columnTypes[i];
           switch(iType) {
@@ -1732,13 +1738,13 @@ class ReportExecutor
   }
   
   private static
-  List<Map> toArrayOfMap(List<List> listOfList, String sXKey, String[] asYKeys)
+  List<Map<String,Object>> toArrayOfMap(List<List<Object>> listOfList, String sXKey, String[] asYKeys)
   {
-    if(listOfList == null || listOfList.size() == 0) return new ArrayList(0);
-    List<Map> listResult = new ArrayList<Map> (listOfList.size());
+    if(listOfList == null || listOfList.size() == 0) return new ArrayList<Map<String,Object>>(0);
+    List<Map<String,Object>> listResult = new ArrayList<Map<String,Object>> (listOfList.size());
     for(int i = 0; i < listOfList.size(); i++) {
-      List record = listOfList.get(i);
-      Map  map  = new HashMap(asYKeys.length + 1);
+      List<Object> record = listOfList.get(i);
+      Map<String,Object>  map  = new HashMap<String,Object>(asYKeys.length + 1);
       map.put(sXKey, record.get(0));
       for(int j = 0; j < asYKeys.length; j++) {
         map.put(asYKeys[j], record.get(j+1));
@@ -1749,20 +1755,20 @@ class ReportExecutor
   }
   
   private static
-  Map<String, List> toMapOfArray(List<List> listOfList, String sXKey, String[] asYKeys)
+  Map<String, List<Object>> toMapOfArray(List<List<Object>> listOfList, String sXKey, String[] asYKeys)
   {
-    if(listOfList == null || listOfList.size() == 0) return new HashMap<String, List> (0);
-    Map<String, List> mapResult = new HashMap<String, List> (asYKeys.length + 1);
-    List list0 = new ArrayList(listOfList.size());
+    if(listOfList == null || listOfList.size() == 0) return new HashMap<String, List<Object>> (0);
+    Map<String, List<Object>> mapResult = new HashMap<String, List<Object>>(asYKeys.length + 1);
+    List<Object> list0 = new ArrayList<Object>(listOfList.size());
     for(int i = 0; i < listOfList.size(); i++) {
-      List record = listOfList.get(i);
+      List<Object> record = listOfList.get(i);
       list0.add(record.get(0));
     }
     mapResult.put(sXKey, list0);
     for(int j = 0; j < asYKeys.length; j++) {
-      List listJ = new ArrayList(listOfList.size());
+      List<Object> listJ = new ArrayList<Object>(listOfList.size());
       for(int i = 0; i < listOfList.size(); i++) {
-        List record = listOfList.get(i);
+        List<Object> record = listOfList.get(i);
         listJ.add(record.get(j+1));
       }
       mapResult.put(asYKeys[j], listJ);
@@ -1771,32 +1777,36 @@ class ReportExecutor
   }
   
   private static
-  List getXValues(List<List> listOfList)
+  List<Object> getXValues(List<List<Object>> listOfList)
   {
-    if(listOfList == null || listOfList.size() == 0) return new ArrayList(0);
-    List listResult = new ArrayList();
+    if(listOfList == null || listOfList.size() == 0) {
+      return new ArrayList<Object>(0);
+    }
+    List<Object> listResult = new ArrayList<Object>();
     for(int i = 0; i < listOfList.size(); i++) {
-      List record = listOfList.get(i);
+      List<Object> record = listOfList.get(i);
       if(record.size() > 0) listResult.add(record.get(0));
     }
     return listResult;
   }
   
   private static
-  List getYValues(List<List> listOfList)
+  List<List<Object>> getYValues(List<List<Object>> listOfList)
   {
-    if(listOfList == null || listOfList.size() == 0) return new ArrayList(0);
-    List record0 = listOfList.get(0);
+    if(listOfList == null || listOfList.size() == 0) {
+      return new ArrayList<List<Object>>(0);
+    }
+    List<Object> record0 = listOfList.get(0);
     int iSizeY   = record0.size() - 1;
-    if(iSizeY < 1) return new ArrayList(0);
-    List listResult = new ArrayList(iSizeY);
+    if(iSizeY < 1) return new ArrayList<List<Object>>(0);
+    List<List<Object>> listResult = new ArrayList<List<Object>>(iSizeY);
     for(int j = 1; j <= iSizeY; j++) {
-      listResult.add(new ArrayList());
+      listResult.add(new ArrayList<Object>());
     }
     for(int i = 0; i < listOfList.size(); i++) {
-      List record = listOfList.get(i);
+      List<Object> record = listOfList.get(i);
       for(int j = 1; j <= iSizeY; j++) {
-        List listJ = (List) listResult.get(j-1);
+        List<Object> listJ = listResult.get(j-1);
         listJ.add(record.get(j));
       }
     }
@@ -1804,17 +1814,17 @@ class ReportExecutor
   }
   
   private static
-  void calcPercentages(List<List> listOfList)
+  void calcPercentages(List<List<Object>> listOfList)
   {
     if(listOfList == null || listOfList.size() == 0) return;
-    List record0 = listOfList.get(0);
+    List<Object> record0 = listOfList.get(0);
     int iSizeY   = record0.size() - 1;
     if(iSizeY < 1) return;
-    List listTotals = new ArrayList(iSizeY);
+    List<Object> listTotals = new ArrayList<Object>(iSizeY);
     for(int j = 1; j <= iSizeY; j++) {
       double dTotalJ = 0.0d;
       for(int i = 0; i < listOfList.size(); i++) {
-        List record = listOfList.get(i);
+        List<Object> record = listOfList.get(i);
         Object oValue = record.get(j);
         if(oValue instanceof Number) {
           dTotalJ += ((Number) oValue).doubleValue();
@@ -1827,7 +1837,7 @@ class ReportExecutor
       double dTotalJ = oTotalJ.doubleValue();
       if(dTotalJ == 0.0d) continue;
       for(int i = 0; i < listOfList.size(); i++) {
-        List record = listOfList.get(i);
+        List<Object> record = listOfList.get(i);
         Object oValue = record.get(j);
         if(oValue instanceof Number) {
           double dValue = ((Number) oValue).doubleValue();
@@ -1839,7 +1849,7 @@ class ReportExecutor
   }
   
   private static
-  double[] calcMinMaxSumAvg(List<List> listOfList)
+  double[] calcMinMaxSumAvg(List<List<Object>> listOfList)
   {
     // 0=min,1=max,2=sum,3=avg
     double[] adResult = {0.0d, 0.0d, 0.0d, 0.0d};
@@ -1847,13 +1857,13 @@ class ReportExecutor
     double dMin = Double.MAX_VALUE;
     double dMax = Double.MIN_VALUE;
     double dSum = 0.0d;
-    List record0 = listOfList.get(0);
+    List<Object> record0 = listOfList.get(0);
     int iSizeY   = record0.size() - 1;
     if(iSizeY < 1) return adResult;
     boolean boAtLeastOne = false;
     for(int j = 1; j <= iSizeY; j++) {
       for(int i = 0; i < listOfList.size(); i++) {
-        List record = listOfList.get(i);
+        List<Object> record = listOfList.get(i);
         Object oValue = record.get(j);
         if(oValue instanceof Number) {
           double dValue = ((Number) oValue).doubleValue();
@@ -1901,15 +1911,13 @@ class ReportExecutor
           iBegin = i+1;
           break;
         }
-        else
-          if(sbCheck.toString().endsWith(" ro ") || sbCheck.toString().endsWith(" RO ")) {
-            iBegin = i+1;
-            break;
-          }
-          else
-            if(sbCheck.toString().endsWith(" erehw ") || sbCheck.toString().endsWith(" EREHW ")) {
-              return null;
-            }
+        else if(sbCheck.toString().endsWith(" ro ") || sbCheck.toString().endsWith(" RO ")) {
+          iBegin = i+1;
+          break;
+        }
+        else if(sbCheck.toString().endsWith(" erehw ") || sbCheck.toString().endsWith(" EREHW ")) {
+          return null;
+        }
       }
       cLast = c;
     }

@@ -68,6 +68,13 @@ class NoSQLDataSource
   }
   
   public static
+  boolean getBooleanProperty(String sKey, boolean bDefault)
+  {
+    String sValue = config.getProperty(sKey);
+    return WUtil.toBoolean(sValue, bDefault);
+  }
+  
+  public static
   String getDefaultDbName()
   {
     String sResult = getProperty("nosqldb.dbname");
@@ -98,22 +105,38 @@ class NoSQLDataSource
     throws Exception 
   {
     String type = getProperty("nosqldb.type");
-    INoSQLDB noSQLDB = null;
-    if (type == null || type.length() == 0) {
-      noSQLDB = new NoSQLMock(dbName);
-    } 
-    else {
-      type = type.toLowerCase();
-      if (type.startsWith("ela")) {
-        noSQLDB = new NoSQLElasticsearch(dbName);
-      } 
-      else if (type.startsWith("mon")) {
-        noSQLDB = new NoSQLMongoDB3(dbName);
-      } 
-      else {
-        noSQLDB = new NoSQLMock(dbName);
+    if(type == null || type.length() < 3) {
+      type = "mock";
+      
+      String sUri = getProperty("nosqldb.uri");
+      if(sUri == null || sUri.length() == 0) {
+        sUri = getProperty("nosqldb.url");
+      }
+      if(sUri != null && sUri.length() > 0) {
+        if(sUri.startsWith("mongo")){
+          type = "mongodb";
+        }
+        else if(sUri.startsWith("http")){
+          type = "elasticsearch";
+        }
       }
     }
+    else {
+      type = type.toLowerCase();
+    }
+    
+    INoSQLDB noSQLDB = null;
+    
+    if (type.startsWith("ela")) {
+      noSQLDB = new NoSQLElasticsearch(dbName);
+    } 
+    else if (type.startsWith("mon")) {
+      noSQLDB = new NoSQLMongoDB3(dbName);
+    } 
+    else {
+      noSQLDB = new NoSQLMock(dbName);
+    }
+    
     noSQLDB.setDebug(DEBUG);
     return noSQLDB;
   }

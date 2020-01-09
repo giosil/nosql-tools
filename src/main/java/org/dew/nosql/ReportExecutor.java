@@ -280,24 +280,25 @@ class ReportExecutor
         listData = WUtil.toListOfListObject(oData);
       }
     }
-    else
-      if(sJSONContent != null && sJSONContent.length() > 0 && sJSONContent.startsWith("{")) {
-        Object oMap = JSON.parse(sJSONContent);
-        if(oMap instanceof Map) {
-          Map<String,Object> mMap = WUtil.toMapObject(oMap);
-          mapResult.putAll(mMap);
-          Object oData = mMap.get("data");
-          if(oData instanceof List) {
-            listData = WUtil.toListOfListObject(oData);
-          }
+    else if(sJSONContent != null && sJSONContent.length() > 0 && sJSONContent.startsWith("{")) {
+      Object oMap = JSON.parse(sJSONContent);
+      if(oMap instanceof Map) {
+        Map<String,Object> mMap = WUtil.toMapObject(oMap);
+        mapResult.putAll(mMap);
+        Object oData = mMap.get("data");
+        if(oData instanceof List) {
+          listData = WUtil.toListOfListObject(oData);
         }
       }
-    if(listData == null) listData = new ArrayList<List<Object>>(0);
+    }
+    if(listData == null) {
+      listData = new ArrayList<List<Object>>(0);
+    }
     listRecords = listData;
     if(listData.size() > 1) {
       Object oFirst = listData.remove(0);
       if(oFirst instanceof List) {
-        List<Object> listFirst = WUtil.toListOfObject(oFirst);
+        List<String> listFirst = WUtil.toListOfString(oFirst);
         asLabels = new String[listFirst.size()];
         for(int i = 0; i < listFirst.size(); i++) {
           Object oLabel = listFirst.get(i);
@@ -404,10 +405,9 @@ class ReportExecutor
                 sDataObject = sComment.substring(iSep2+1).trim();
               }
             }
-            else
-              if(sComment.indexOf(":") > 0) {
-                sJSONConfig += sComment;
-              }
+            else if(sComment.indexOf(":") > 0) {
+              sJSONConfig += sComment;
+            }
           continue;
         }
         sLine = sLine.trim();

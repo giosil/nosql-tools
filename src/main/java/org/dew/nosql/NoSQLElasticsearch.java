@@ -1698,19 +1698,16 @@ class NoSQLElasticsearch implements INoSQLDB
     if(oVal instanceof java.util.Date) {
       sVal = WUtil.toISO8601Timestamp_Z(oVal);
     }
-    else
-    if(oVal instanceof java.util.Calendar) {
+    else if(oVal instanceof java.util.Calendar) {
       sVal = WUtil.toISO8601Timestamp_Z(oVal);
     }
-    else
-    if(oVal instanceof java.util.Collection) {
+    else if(oVal instanceof java.util.Collection) {
       sVal = "";
       Iterator it = ((java.util.Collection) oVal).iterator();
       while(it.hasNext()) sVal += " OR " + it.next();
       sVal = sVal.length() > 0 ? "(" + sVal.substring(4) + ")" : sVal;
     }
-    else
-    if(oVal != null && oVal.getClass().isArray()) {
+    else if(oVal != null && oVal.getClass().isArray()) {
       int arrayLength = Array.getLength(oVal);
       sVal = "";
       for(int i = 0; i < arrayLength; i++) {

@@ -75,6 +75,86 @@ class NoSQLDataSource
   }
   
   public static
+  String[] parseUrl(String url)
+  {
+    if(url == null || url.length() == 0) {
+      return null;
+    }
+    int iSepPro = url.indexOf("//");
+    if(iSepPro < 0) return null;
+    
+    String sInfo = "";
+    int iSepOpt = url.indexOf('?');
+    if(iSepOpt > iSepPro) {
+      sInfo = url.substring(iSepPro + 2, iSepOpt).trim();
+    }
+    else {
+      sInfo = url.substring(iSepPro + 2).trim();
+    }
+    if(sInfo == null || sInfo.length() == 0) {
+      return null;
+    }
+    
+    String sHost   = "";
+    int    iPort   = 80;
+    String sDB     = "";
+    String sUser   = "";
+    String sPass   = "";
+    
+    int iSepDB   = sInfo.indexOf('/');
+    if(iSepDB <= 0) {
+      iSepDB = sInfo.length();
+    }
+    else {
+      sDB = sInfo.substring(iSepDB + 1);
+      int iSub = sDB.indexOf('/');
+      if(iSub > 0) {
+        sDB = sDB.substring(0, iSub);
+      }
+    }
+    
+    int iSepCred = sInfo.indexOf('@');
+    if(iSepCred > 0) {
+      int iSepUsrPas = sInfo.indexOf(':');
+      if(iSepUsrPas > 0 && iSepUsrPas < iSepCred) {
+        sUser = sInfo.substring(0, iSepUsrPas);
+        sPass = sInfo.substring(iSepUsrPas + 1, iSepCred);
+      }
+      else {
+        sUser = sInfo.substring(0, iSepCred);
+        sPass = "";
+      }
+      int iSepHostPort = sInfo.lastIndexOf(':');
+      if(iSepHostPort > iSepCred) {
+        sHost = sInfo.substring(iSepCred+1, iSepHostPort);
+        try{ iPort = Integer.parseInt(sInfo.substring(iSepHostPort+1, iSepDB)); } catch(Throwable ex) {}
+        if(iPort < 20) iPort = 27017;
+      }
+      else {
+        sHost = sInfo.substring(iSepCred+1, iSepDB);
+      }
+    }
+    else {
+      int iSepHostPort = sInfo.lastIndexOf(':');
+      if(iSepHostPort > 0) {
+        sHost = sInfo.substring(0, iSepHostPort);
+        try{ iPort = Integer.parseInt(sInfo.substring(iSepHostPort+1, iSepDB)); } catch(Throwable ex) {}
+        if(iPort < 20) iPort = 27017;
+      }
+      else {
+        sHost = sInfo.substring(0, iSepDB);
+      }
+    }
+    
+    if(sHost == null || sHost.length() == 0) {
+      return null;
+    }
+    
+    //                   0      1                      2    3      4
+    return new String[] {sHost, String.valueOf(iPort), sDB, sUser, sPass};
+  }
+  
+  public static
   String getDefaultDbName()
   {
     String sResult = getProperty("nosqldb.dbname");

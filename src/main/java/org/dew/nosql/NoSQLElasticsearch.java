@@ -50,20 +50,41 @@ class NoSQLElasticsearch implements INoSQLDB
   protected static String logprefix = NoSQLElasticsearch.class.getSimpleName() + ".";
   
   protected boolean debug    = false;
-  protected String  host     = NoSQLDataSource.getProperty("nosqldb.host",    "localhost");
-  protected int     port     = NoSQLDataSource.getIntProperty("nosqldb.port", 9200);
-  protected String  user     = NoSQLDataSource.getProperty("nosqldb.user");
-  protected String  pass     = NoSQLDataSource.getProperty("nosqldb.pass",    "");
-  protected String  index    = NoSQLDataSource.getProperty("nosqldb.dbname",  NoSQLDataSource.getProperty("nosqldb.dbauth"));
+  protected String  host     = "localhost";
+  protected int     port     = 9200;
+  protected String  user     = "";
+  protected String  pass     = "";
+  protected String  index    = "";
   protected int     defLimit = 10000;
   protected int     timeOut  = 60000;
   
   public NoSQLElasticsearch()
   {
+    String sUrl = NoSQLDataSource.getProperty("nosqldb.url", "");
+    if(sUrl == null || sUrl.length() == 0) {
+      sUrl = NoSQLDataSource.getProperty("nosqldb.uri", "");
+    }
+    String[] asURL = NoSQLDataSource.parseUrl(sUrl);
+    if(asURL != null && asURL.length > 4 && asURL[0] != null) {
+      host  = asURL[0];
+      port  = WUtil.toInt(asURL[1], 9200);
+      index = asURL[2];
+      user  = asURL[3];
+      pass  = asURL[4];
+    }
+    else {
+      host  = NoSQLDataSource.getProperty("nosqldb.host", "localhost");
+      port  = NoSQLDataSource.getIntProperty("nosqldb.port", 9200);
+      index = NoSQLDataSource.getProperty("nosqldb.dbname",  NoSQLDataSource.getProperty("nosqldb.dbauth"));
+      user  = NoSQLDataSource.getProperty("nosqldb.user");
+      pass  = NoSQLDataSource.getProperty("nosqldb.pass", "");
+    }
   }
   
   public NoSQLElasticsearch(String index)
   {
+    this();
+    
     if(index != null && index.length() > 0) {
       this.index = index;
     }
@@ -71,6 +92,8 @@ class NoSQLElasticsearch implements INoSQLDB
   
   public NoSQLElasticsearch(String host, int port, String index)
   {
+    this();
+    
     if(host != null && host.length() > 0) {
       this.host = host;
     }
@@ -84,6 +107,8 @@ class NoSQLElasticsearch implements INoSQLDB
   
   public NoSQLElasticsearch(String host, int port, String index, String user, String pass)
   {
+    this();
+    
     if(host != null && host.length() > 0) {
       this.host = host;
     }

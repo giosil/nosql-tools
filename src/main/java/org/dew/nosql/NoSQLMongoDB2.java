@@ -1048,8 +1048,7 @@ class NoSQLMongoDB2 implements INoSQLDB
       }
       return result;
     }
-    else
-    if(object instanceof Map) {
+    else if(object instanceof Map) {
       Map map = (Map) object;
       normalizeMap(map);
       Object _id = map.get("_id");
@@ -1062,8 +1061,7 @@ class NoSQLMongoDB2 implements INoSQLDB
       }
       return result;
     }
-    else
-    if(object.getClass().isArray()) {
+    else if(object.getClass().isArray()) {
       int length = Array.getLength(object);
       BasicDBList result = new BasicDBList();
       for(int i = 0; i < length; i++) {

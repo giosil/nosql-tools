@@ -200,6 +200,7 @@ class NoSQLMock implements INoSQLDB
     if(filePath == null || filePath.length() == 0) {
       filePath = System.getProperty("user.home") + File.separator + "nosqlmock.json";
     }
+    filePath = filePath.replace("$HOME", System.getProperty("user.home"));
     
     // Write File
     try {
@@ -1667,6 +1668,7 @@ class NoSQLMock implements INoSQLDB
     if(filePath == null || filePath.length() == 0) {
       filePath = System.getProperty("user.home") + File.separator + "nosqlmock.json";
     }
+    filePath = filePath.replace("$HOME", System.getProperty("user.home"));
     
     String firstDatabase = null;
     

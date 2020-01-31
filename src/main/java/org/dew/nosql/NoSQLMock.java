@@ -5,6 +5,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+
+import java.lang.reflect.Array;
+
 import java.net.NetworkInterface;
 import java.net.URL;
 
@@ -13,6 +16,7 @@ import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
@@ -1480,6 +1484,35 @@ class NoSQLMock implements INoSQLDB
       if(sVal.endsWith("%")) {
         sVal = sVal.substring(0, sVal.length()-1);
         boEndsWithPerc = true;
+      }
+      
+      if(val instanceof Collection) {
+        if(boNE || boGT || boLT) {
+          if(((Collection) val).contains(ivl)) return false;
+        }
+        else {
+          if(!((Collection) val).contains(ivl)) return false;
+        }
+        continue;
+      }
+      if(val != null && val.getClass().isArray()) {
+        if(boNE || boGT || boLT) {
+          int length = Array.getLength(val);
+          for(int i = 0; i < length; i++) {
+            Object oi = Array.get(val, i);
+            if(oi != null && oi.equals(ivl)) return false;
+          }
+        }
+        else {
+          int length = Array.getLength(val);
+          boolean boAtLeastOne = false;
+          for(int i = 0; i < length; i++) {
+            Object oi = Array.get(val, i);
+            if(oi != null && oi.equals(ivl)) boAtLeastOne = true;
+          }
+          if(!boAtLeastOne) return false;
+        }
+        continue;
       }
       
       if(sVal.equals("null")) {

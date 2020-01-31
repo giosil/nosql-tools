@@ -1116,14 +1116,7 @@ class NoSQLMongoDB2 implements INoSQLDB
       if(sKey.equals(FILTER_EXCLUDE) || sKey.equals(FILTER_FIELDS)) continue;
       
       Object value = entry.getValue();
-      if(value instanceof Collection) {
-        result.put(sKey, new BasicDBObject("$in", value));
-        continue;
-      }
-      if(value != null && value.getClass().isArray()) {
-        result.put(sKey, new BasicDBObject("$in", value));
-        continue;
-      }
+      
       if(sKey.equals("_id")) {
         if(value instanceof String) {
           String sValue = value.toString();
@@ -1179,6 +1172,24 @@ class NoSQLMongoDB2 implements INoSQLDB
         }
       }
       
+      if(value instanceof Collection) {
+        if(boNE || boGT || boLT) {
+          result.put(sKey, new BasicDBObject("$nin", value));
+        }
+        else {
+          result.put(sKey, new BasicDBObject("$in", value));
+        }
+        continue;
+      }
+      if(value != null && value.getClass().isArray()) {
+        if(boNE || boGT || boLT) {
+          result.put(sKey, new BasicDBObject("$nin", value));
+        }
+        else {
+          result.put(sKey, new BasicDBObject("$in", value));
+        }
+        continue;
+      }
       if(value instanceof Calendar) {
         value = ((Calendar) value).getTime();
       }

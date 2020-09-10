@@ -3274,6 +3274,34 @@ class WUtil
   }
   
   public static
+  Calendar getCurrentDate(int dayOffset, int monthOffset, int yearOffset, boolean firstDayOfMonth, boolean lastDayOfMonth)
+  {
+    Calendar cal = Calendar.getInstance();
+    cal.set(Calendar.HOUR_OF_DAY, 0);
+    cal.set(Calendar.MINUTE,      0);
+    cal.set(Calendar.SECOND,      0);
+    cal.set(Calendar.MILLISECOND, 0);
+    if(dayOffset != 0) {
+      cal.add(Calendar.DATE, dayOffset);
+    }
+    if(monthOffset != 0) {
+      cal.add(Calendar.MONTH, monthOffset);
+    }
+    if(yearOffset != 0) {
+      cal.add(Calendar.YEAR, yearOffset);
+    }
+    if(firstDayOfMonth) {
+      cal.set(Calendar.DATE, 1);
+    }
+    if(lastDayOfMonth) {
+      cal.set(Calendar.DATE,  1);
+      cal.add(Calendar.MONTH, 1);
+      cal.add(Calendar.DATE, -1);
+    }
+    return cal;
+  }
+  
+  public static
   Calendar getUndefinedDate()
   {
     return new GregorianCalendar(9999, 11, 31, 0, 0, 0);

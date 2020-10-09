@@ -763,8 +763,18 @@ class WUtil
         case '\355':   sb.append("&iacute;"); break;
         case '\363':   sb.append("&oacute;"); break;
         case '\372':   sb.append("&uacute;"); break;
+        case '\347':   sb.append("&ccedil;"); break;
+        case '\307':   sb.append("&Ccedil;"); break;
+        case '\361':   sb.append("&ntilde;"); break;
+        case '\342':   sb.append("&acirc;");  break;
+        case '\352':   sb.append("&ecirc;");  break;
+        case '\356':   sb.append("&icirc;");  break;
+        case '\364':   sb.append("&ocirc;");  break;
+        case '\373':   sb.append("&ucirc;");  break;
         case '\252':   sb.append("&ordf;");   break;
         case '\260':   sb.append("&deg;");    break;
+        case '\241':   sb.append("&iexcl;");  break;
+        case '\277':   sb.append("&iquest;"); break;
         case '\u20ac': sb.append("&euro;");   break;
         default: {
           if(c < 128) {

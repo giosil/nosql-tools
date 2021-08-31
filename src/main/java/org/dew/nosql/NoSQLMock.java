@@ -46,7 +46,7 @@ class NoSQLMock implements INoSQLDB
   
   protected static boolean firstload = false;
   protected static String  defaultDatabase = "default";
-  protected static Map<String,Map<String,List<Map<String,Object>>>> data = new HashMap<String, Map<String,List<Map<String,Object>>>>();
+  protected static Map<String,Map<String,List<Map<String, Object>>>> data = new HashMap<String, Map<String,List<Map<String, Object>>>>();
   static {
     if(!firstload) {
       firstload = true;
@@ -114,7 +114,7 @@ class NoSQLMock implements INoSQLDB
   
   @Override
   public 
-  Map<String,Object> load(Map<String,Object> mapOptions)
+  Map<String, Object> load(Map<String, Object> mapOptions)
     throws Exception
   {
     if(debug) System.out.println(logprefix + "load(" + mapOptions + ")...");
@@ -125,9 +125,9 @@ class NoSQLMock implements INoSQLDB
       String sFileName = WUtil.toString(mapOptions.get(FILE_NAME), null);
       if(sFileName != null && sFileName.equals("-")) {
         // Clear data
-        if(data == null) data = new HashMap<String, Map<String,List<Map<String,Object>>>>();
+        if(data == null) data = new HashMap<String, Map<String,List<Map<String, Object>>>>();
         data.clear();
-        Map<String,Object> mapResult = getInfo();
+        Map<String, Object> mapResult = getInfo();
         if(mapResult != null) {
           mapResult.put("databases", 0);
           mapResult.put("collections", 0);
@@ -152,7 +152,7 @@ class NoSQLMock implements INoSQLDB
     
     if(counts == null || counts.length < 3 || counts[0] == 0) {
       if(debug) System.out.println(logprefix + "load(" + mapOptions + ") no data available.");
-      Map<String,Object> mapResult = getInfo();
+      Map<String, Object> mapResult = getInfo();
       if(mapResult != null) {
         mapResult.put("databases", 0);
         mapResult.put("collections", 0);
@@ -164,7 +164,7 @@ class NoSQLMock implements INoSQLDB
     
     if(debug) System.out.println(logprefix + "load(" + mapOptions + ") imported databases: " + counts[0] + ", collections: " + counts[1] + ", records: " + counts[2]);
     
-    Map<String,Object> mapResult = getInfo();
+    Map<String, Object> mapResult = getInfo();
     if(mapResult != null) {
       mapResult.put("databases", counts[0]);
       mapResult.put("collections", counts[1]);
@@ -177,14 +177,14 @@ class NoSQLMock implements INoSQLDB
   
   @Override
   public 
-  boolean save(Map<String,Object> mapOptions)
+  boolean save(Map<String, Object> mapOptions)
     throws Exception
   {
     if(debug) System.out.println(logprefix + "save(" + mapOptions + ")...");
     
     boolean result = false;
     
-    if(data == null) data = new HashMap<String, Map<String,List<Map<String,Object>>>>();
+    if(data == null) data = new HashMap<String, Map<String,List<Map<String, Object>>>>();
     
     // Check data file
     String filePath = "";
@@ -225,14 +225,14 @@ class NoSQLMock implements INoSQLDB
   
   @Override
   public
-  Map<String,Object> getInfo()
+  Map<String, Object> getInfo()
       throws Exception
   {
     if(debug) System.out.println(logprefix + "getInfo()...");
     
-    if(data == null) data = new HashMap<String, Map<String,List<Map<String,Object>>>>();
+    if(data == null) data = new HashMap<String, Map<String,List<Map<String, Object>>>>();
     
-    Map<String,Object> mapResult = new HashMap<String,Object>(2);
+    Map<String, Object> mapResult = new HashMap<String, Object>(2);
     mapResult.put("name",    "Mock");
     mapResult.put("version", "1.0.0");
     
@@ -247,11 +247,11 @@ class NoSQLMock implements INoSQLDB
   {
     if(debug) System.out.println(logprefix + "getCollections()...");
     
-    if(data == null) data = new HashMap<String, Map<String,List<Map<String,Object>>>>();
+    if(data == null) data = new HashMap<String, Map<String,List<Map<String, Object>>>>();
     
     List<String> listResult = new ArrayList<String>();
     
-    Map<String,List<Map<String,Object>>> mapColData = data.get(dbname);
+    Map<String,List<Map<String, Object>>> mapColData = data.get(dbname);
     if(mapColData != null) {
       Iterator<String> iterator = mapColData.keySet().iterator();
       while(iterator.hasNext()) {
@@ -272,12 +272,12 @@ class NoSQLMock implements INoSQLDB
     if(debug) System.out.println(logprefix + "drop(" + collection + ")...");
     boolean result = false;
     
-    if(data == null) data = new HashMap<String, Map<String,List<Map<String,Object>>>>();
+    if(data == null) data = new HashMap<String, Map<String,List<Map<String, Object>>>>();
     
     if(collection != null && collection.length() > 0) {
-      Map<String,List<Map<String,Object>>> mapColData = data.get(dbname);
+      Map<String,List<Map<String, Object>>> mapColData = data.get(dbname);
       if(mapColData != null) {
-        List<Map<String,Object>> listColData = mapColData.remove(collection);
+        List<Map<String, Object>> listColData = mapColData.remove(collection);
         result = listColData != null;
       }
     }
@@ -288,16 +288,16 @@ class NoSQLMock implements INoSQLDB
   
   @Override
   public
-  String insert(String collection, Map<String,?> mapData)
+  String insert(String collection, Map<String, ?> mapData)
       throws Exception
   {
     if(debug) System.out.println(logprefix + "insert(" + collection + "," + mapData + ")...");
     
     String result = generateId();
     
-    List<Map<String,Object>> listColData = getCollectionData(dbname, collection, true);
+    List<Map<String, Object>> listColData = getCollectionData(dbname, collection, true);
     
-    Map<String,Object> mapItem = mapObject(mapData);
+    Map<String, Object> mapItem = mapObject(mapData);
     mapItem.put("_id", result);
     listColData.add(mapItem);
     
@@ -307,16 +307,16 @@ class NoSQLMock implements INoSQLDB
   
   @Override
   public
-  String insert(String collection, Map<String,?> mapData, boolean refresh)
+  String insert(String collection, Map<String, ?> mapData, boolean refresh)
       throws Exception
   {
     if(debug) System.out.println(logprefix + "insert(" + collection + "," + mapData + "," + refresh + ")...");
     
     String result = generateId();
     
-    List<Map<String,Object>> listColData = getCollectionData(dbname, collection, true);
+    List<Map<String, Object>> listColData = getCollectionData(dbname, collection, true);
     
-    Map<String,Object> mapItem = mapObject(mapData);
+    Map<String, Object> mapItem = mapObject(mapData);
     mapItem.put("_id", result);
     listColData.add(mapItem);
     
@@ -326,7 +326,7 @@ class NoSQLMock implements INoSQLDB
   
   @Override
   public
-  int bulkIns(String collection, List<Map<String,?>> listData)
+  int bulkIns(String collection, List<Map<String, ?>> listData)
       throws Exception
   {
     if(debug) {
@@ -347,14 +347,14 @@ class NoSQLMock implements INoSQLDB
       return 0;
     }
     
-    List<Map<String,Object>> listColData = getCollectionData(dbname, collection, true);
+    List<Map<String, Object>> listColData = getCollectionData(dbname, collection, true);
     
     int countIns = 0;
     for(int i = 0; i < listData.size(); i++) {
-      Map<String,?> mapData = listData.get(i);
+      Map<String, ?> mapData = listData.get(i);
       if(mapData == null || mapData.isEmpty()) continue;
       
-      Map<String,Object> mapItem = mapObject(mapData);
+      Map<String, Object> mapItem = mapObject(mapData);
       mapItem.put("_id", generateId());
       listColData.add(mapItem);
       
@@ -367,16 +367,16 @@ class NoSQLMock implements INoSQLDB
   
   @Override
   public
-  boolean replace(String collection, Map<String,?> mapData, String id)
+  boolean replace(String collection, Map<String, ?> mapData, String id)
       throws Exception
   {
     if(debug) System.out.println(logprefix + "replace(" + collection + "," + mapData + ")...");
     
-    List<Map<String,Object>> listColData = getCollectionData(dbname, collection, false);
+    List<Map<String, Object>> listColData = getCollectionData(dbname, collection, false);
     
     boolean result = false;
     for(int i = 0; i < listColData.size(); i++) {
-      Map<String,Object> mapItem = listColData.get(i);
+      Map<String, Object> mapItem = listColData.get(i);
       if(mapItem == null) continue;
       String sId = (String) mapItem.get("_id");
       if(sId != null && sId.equals(id)) {
@@ -393,7 +393,7 @@ class NoSQLMock implements INoSQLDB
   
   @Override
   public
-  int update(String collection, Map<String,?> mapData, String id)
+  int update(String collection, Map<String, ?> mapData, String id)
       throws Exception
   {
     if(debug) System.out.println(logprefix + "update(" + collection + "," + mapData + "," + id + ")...");
@@ -403,11 +403,11 @@ class NoSQLMock implements INoSQLDB
       return 0;
     }
     
-    List<Map<String,Object>> listColData = getCollectionData(dbname, collection, false);
+    List<Map<String, Object>> listColData = getCollectionData(dbname, collection, false);
     
     int result = 0;
     for(int i = 0; i < listColData.size(); i++) {
-      Map<String,Object> mapItem = listColData.get(i);
+      Map<String, Object> mapItem = listColData.get(i);
       if(mapItem == null) continue;
       String sId = (String) mapItem.get("_id");
       if(sId != null && sId.equals(id)) {
@@ -423,7 +423,7 @@ class NoSQLMock implements INoSQLDB
   
   @Override
   public
-  int update(String collection, Map<String,?> mapData, Map<String,?> mapFilter)
+  int update(String collection, Map<String, ?> mapData, Map<String, ?> mapFilter)
       throws Exception
   {
     if(debug) System.out.println(logprefix + "update(" + collection + "," + mapData + "," + mapFilter + ")...");
@@ -435,10 +435,10 @@ class NoSQLMock implements INoSQLDB
     
     int countUpd = 0;
     
-    List<Map<String,Object>> listColData = getCollectionData(dbname, collection, false);
+    List<Map<String, Object>> listColData = getCollectionData(dbname, collection, false);
     
     for(int i = 0; i < listColData.size(); i++) {
-      Map<String,Object> mapItem = listColData.get(i);
+      Map<String, Object> mapItem = listColData.get(i);
       if(mapItem == null) continue;
       if(match(mapItem, mapFilter)) {
         mapItem.putAll(mapData);
@@ -453,17 +453,17 @@ class NoSQLMock implements INoSQLDB
   
   @Override
   public
-  String upsert(String collection, Map<String,?> mapData, Map<String,?> mapFilter)
+  String upsert(String collection, Map<String, ?> mapData, Map<String, ?> mapFilter)
       throws Exception
   {
     if(debug) System.out.println(logprefix + "upsert(" + collection + "," + mapData + "," + mapFilter + ")...");
     
     String result = null;
     
-    List<Map<String,Object>> listColData = getCollectionData(dbname, collection, true);
+    List<Map<String, Object>> listColData = getCollectionData(dbname, collection, true);
     
     for(int i = 0; i < listColData.size(); i++) {
-      Map<String,Object> mapItem = listColData.get(i);
+      Map<String, Object> mapItem = listColData.get(i);
       if(mapItem == null) continue;
       if(match(mapItem, mapFilter)) {
         mapItem.putAll(mapData);
@@ -474,7 +474,7 @@ class NoSQLMock implements INoSQLDB
     
     if(result == null || result.length() == 0) {
       result = generateId();
-      Map<String,Object> mapItem = mapObject(mapData);
+      Map<String, Object> mapItem = mapObject(mapData);
       mapItem.put("_id", result);
       listColData.add(mapItem);
     }
@@ -492,11 +492,11 @@ class NoSQLMock implements INoSQLDB
     
     if(fields == null || fields.length() == 0) return 0;
     
-    List<Map<String,Object>> listColData = getCollectionData(dbname, collection, false);
+    List<Map<String, Object>> listColData = getCollectionData(dbname, collection, false);
     
     int result = 0;
     for(int i = 0; i < listColData.size(); i++) {
-      Map<String,Object> mapItem = listColData.get(i);
+      Map<String, Object> mapItem = listColData.get(i);
       if(mapItem == null) continue;
       String sId = (String) mapItem.get("_id");
       if(sId != null && sId.equals(id)) {
@@ -522,11 +522,11 @@ class NoSQLMock implements INoSQLDB
   {
     if(debug) System.out.println(logprefix + "inc(" + collection + "," + id + "," + field + "," + value + ")...");
     
-    List<Map<String,Object>> listColData = getCollectionData(dbname, collection, false);
+    List<Map<String, Object>> listColData = getCollectionData(dbname, collection, false);
     
     int result = 0;
     for(int i = 0; i < listColData.size(); i++) {
-      Map<String,Object> mapItem = listColData.get(i);
+      Map<String, Object> mapItem = listColData.get(i);
       if(mapItem == null) continue;
       String sId = (String) mapItem.get("_id");
       if(sId != null && sId.equals(id)) {
@@ -564,11 +564,11 @@ class NoSQLMock implements INoSQLDB
   {
     if(debug) System.out.println(logprefix + "inc(" + collection + "," + id + "," + field1 + "," + value1 + "," + field2 + "," + value2 + ")...");
     
-    List<Map<String,Object>> listColData = getCollectionData(dbname, collection, false);
+    List<Map<String, Object>> listColData = getCollectionData(dbname, collection, false);
     
     int result = 0;
     for(int i = 0; i < listColData.size(); i++) {
-      Map<String,Object> mapItem = listColData.get(i);
+      Map<String, Object> mapItem = listColData.get(i);
       if(mapItem == null) continue;
       String sId = (String) mapItem.get("_id");
       if(sId != null && sId.equals(id)) {
@@ -618,17 +618,17 @@ class NoSQLMock implements INoSQLDB
   
   @Override
   public
-  int inc(String collection, Map<String,?> mapFilter, String field, Number value)
+  int inc(String collection, Map<String, ?> mapFilter, String field, Number value)
       throws Exception
   {
     if(debug) System.out.println(logprefix + "inc(" + collection + "," + mapFilter + "," + field + "," + value + ")...");
     
     int countUpd = 0;
     
-    List<Map<String,Object>> listColData = getCollectionData(dbname, collection, false);
+    List<Map<String, Object>> listColData = getCollectionData(dbname, collection, false);
     
     for(int i = 0; i < listColData.size(); i++) {
-      Map<String,Object> mapItem = listColData.get(i);
+      Map<String, Object> mapItem = listColData.get(i);
       if(mapItem == null) continue;
       if(match(mapItem, mapFilter)) {
         if(value == null) value = new Integer(0);
@@ -658,17 +658,17 @@ class NoSQLMock implements INoSQLDB
   
   @Override
   public
-  int inc(String collection, Map<String,?> mapFilter, String field1, Number value1, String field2, Number value2)
+  int inc(String collection, Map<String, ?> mapFilter, String field1, Number value1, String field2, Number value2)
       throws Exception
   {
     if(debug) System.out.println(logprefix + "inc(" + collection + "," + mapFilter + "," + field1 + "," + value1 + "," + field2 + "," + value2 + ")...");
     
     int countUpd = 0;
     
-    List<Map<String,Object>> listColData = getCollectionData(dbname, collection, false);
+    List<Map<String, Object>> listColData = getCollectionData(dbname, collection, false);
     
     for(int i = 0; i < listColData.size(); i++) {
-      Map<String,Object> mapItem = listColData.get(i);
+      Map<String, Object> mapItem = listColData.get(i);
       if(mapItem == null) continue;
       if(match(mapItem, mapFilter)) {
         if(value1 == null) value1 = new Integer(0);
@@ -727,11 +727,11 @@ class NoSQLMock implements INoSQLDB
       return -1;
     }
     
-    List<Map<String,Object>> listColData = getCollectionData(dbname, collection, false);
+    List<Map<String, Object>> listColData = getCollectionData(dbname, collection, false);
     
     int iIndexOf = -1;
     for(int i = 0; i < listColData.size(); i++) {
-      Map<String,Object> mapItem = listColData.get(i);
+      Map<String, Object> mapItem = listColData.get(i);
       if(mapItem == null) continue;
       String sId = (String) mapItem.get("_id");
       if(sId != null && sId.equals(id)) {
@@ -752,7 +752,7 @@ class NoSQLMock implements INoSQLDB
   
   @Override
   public
-  int delete(String collection, Map<String,?> mapFilter)
+  int delete(String collection, Map<String, ?> mapFilter)
       throws Exception
   {
     if(debug) System.out.println(logprefix + "delete(" + collection + "," + mapFilter + ")...");
@@ -764,11 +764,11 @@ class NoSQLMock implements INoSQLDB
     
     int iResult = 0;
     
-    List<Map<String,Object>> listColData = getCollectionData(dbname, collection, false);
+    List<Map<String, Object>> listColData = getCollectionData(dbname, collection, false);
     
-    Iterator<Map<String,Object>> iterator = listColData.iterator();
+    Iterator<Map<String, Object>> iterator = listColData.iterator();
     while(iterator.hasNext()) {
-      Map<String,Object> mapItem = iterator.next();
+      Map<String, Object> mapItem = iterator.next();
       if(mapItem == null) continue;
       if(match(mapItem, mapFilter)) {
         iterator.remove();
@@ -783,18 +783,18 @@ class NoSQLMock implements INoSQLDB
   
   @Override
   public
-  List<Map<String,Object>> find(String collection, Map<String,?> mapFilter, String fields)
+  List<Map<String, Object>> find(String collection, Map<String, ?> mapFilter, String fields)
       throws Exception
   {
     if(debug) System.out.println(logprefix + "find(" + collection + "," + mapFilter + ",\"" + fields + "\")...");
     
-    List<Map<String,Object>> listResult = new ArrayList<Map<String,Object>>();
+    List<Map<String, Object>> listResult = new ArrayList<Map<String, Object>>();
     
-    List<Map<String,Object>> listColData = getCollectionData(dbname, collection, false);
+    List<Map<String, Object>> listColData = getCollectionData(dbname, collection, false);
     
-    Iterator<Map<String,Object>> iterator = listColData.iterator();
+    Iterator<Map<String, Object>> iterator = listColData.iterator();
     while(iterator.hasNext()) {
-      Map<String,Object> mapItem = iterator.next();
+      Map<String, Object> mapItem = iterator.next();
       if(mapItem == null) continue;
       if(match(mapItem, mapFilter)) {
         listResult.add(mapItem);
@@ -805,19 +805,20 @@ class NoSQLMock implements INoSQLDB
     return listResult;
   }
   
+  @Override
   public
-  List<Map<String,Object>> find(String collection, Map<String,?> mapFilter, String fields, String orderBy, int limit)
+  List<Map<String, Object>> find(String collection, Map<String, ?> mapFilter, String fields, String orderBy, int limit)
       throws Exception
   {
     if(debug) System.out.println(logprefix + "find(" + collection + "," + mapFilter + ",\"" + fields + "\",\"" + orderBy + "\"," + limit + ")...");
     
-    List<Map<String,Object>> listResult = new ArrayList<Map<String,Object>>();
+    List<Map<String, Object>> listResult = new ArrayList<Map<String, Object>>();
     
-    List<Map<String,Object>> listColData = getCollectionData(dbname, collection, false);
+    List<Map<String, Object>> listColData = getCollectionData(dbname, collection, false);
     
-    Iterator<Map<String,Object>> iterator = listColData.iterator();
+    Iterator<Map<String, Object>> iterator = listColData.iterator();
     while(iterator.hasNext()) {
-      Map<String,Object> mapItem = iterator.next();
+      Map<String, Object> mapItem = iterator.next();
       if(mapItem == null) continue;
       if(match(mapItem, mapFilter)) {
         listResult.add(mapItem);
@@ -839,8 +840,8 @@ class NoSQLMock implements INoSQLDB
       boolean boSorted = true;
       do {
         for(int i = iLast; i > iFirst; i--) {
-          Map<String,Object> m1 = listResult.get(i);
-          Map<String,Object> m2 = listResult.get(i - 1);
+          Map<String, Object> m1 = listResult.get(i);
+          Map<String, Object> m2 = listResult.get(i - 1);
           Object o1  = m1.get(key);
           Object o2  = m2.get(key);
           boolean lt = false;
@@ -870,18 +871,85 @@ class NoSQLMock implements INoSQLDB
   
   @Override
   public
-  List<Map<String,Object>> search(String collection, String field, String text)
+  List<Map<String, Object>> find(String collection, Map<String, ?> mapFilter, String fields, String orderBy, int limit, int skip)
+    throws Exception
+  {
+    if(debug) System.out.println(logprefix + "find(" + collection + "," + mapFilter + ",\"" + fields + "\",\"" + orderBy + "\"," + limit + "," + skip + ")...");
+    
+    List<Map<String, Object>> listResult = new ArrayList<Map<String, Object>>();
+    
+    List<Map<String, Object>> listColData = getCollectionData(dbname, collection, false);
+    
+    int rows = 0;
+    Iterator<Map<String, Object>> iterator = listColData.iterator();
+    while(iterator.hasNext()) {
+      Map<String, Object> mapItem = iterator.next();
+      if(mapItem == null) continue;
+      if(match(mapItem, mapFilter)) {
+        rows++;
+        if(rows <= skip) continue;
+        listResult.add(mapItem);
+        if(limit > 0 && listResult.size() >= limit) {
+          break;
+        }
+      }
+    }
+    
+    if(orderBy != null && orderBy.length() > 0) {
+      String key = null;
+      int sep = orderBy.indexOf(',');
+      key = sep > 0 ? orderBy.substring(0, sep) : orderBy;
+      String type  = getOrderType(key);
+      boolean desc = type != null && type.equals(":desc");
+      key = getOrderField(key);
+      int iFirst = 0;
+      int iLast  = listResult.size() - 1;
+      boolean boSorted = true;
+      do {
+        for(int i = iLast; i > iFirst; i--) {
+          Map<String, Object> m1 = listResult.get(i);
+          Map<String, Object> m2 = listResult.get(i - 1);
+          Object o1  = m1.get(key);
+          Object o2  = m2.get(key);
+          boolean lt = false;
+          if(o1 instanceof Comparable && o2 instanceof Comparable) {
+            lt = ((Comparable) o1).compareTo(o2) < 0;
+          }
+          else {
+            lt = o1 == null && o2 != null;
+          }
+          if(lt) {
+            listResult.set(i,   m2);
+            listResult.set(i-1, m1);
+            boSorted = false;
+          }
+        }
+        iFirst++;
+      }
+      while((iLast > iFirst) &&(!boSorted));
+      if(desc) {
+        listResult = reverse(listResult);
+      }
+    }
+    
+    if(debug) System.out.println(logprefix + "find(" + collection + "," + mapFilter + ",\"" + fields + "\",\"" + orderBy + "\"," + limit + "," + skip + ") -> " + listResult.size() + " documents");
+    return listResult;
+  }
+  
+  @Override
+  public
+  List<Map<String, Object>> search(String collection, String field, String text)
       throws Exception
   {
     if(debug) System.out.println(logprefix + "search(" + collection + "," + field + "," + text + ")...");
     
-    List<Map<String,Object>> listResult = new ArrayList<Map<String,Object>>();
+    List<Map<String, Object>> listResult = new ArrayList<Map<String, Object>>();
     
-    List<Map<String,Object>> listColData = getCollectionData(dbname, collection, false);
+    List<Map<String, Object>> listColData = getCollectionData(dbname, collection, false);
     
-    Iterator<Map<String,Object>> iterator = listColData.iterator();
+    Iterator<Map<String, Object>> iterator = listColData.iterator();
     while(iterator.hasNext()) {
-      Map<String,Object> mapItem = iterator.next();
+      Map<String, Object> mapItem = iterator.next();
       if(mapItem == null) continue;
       if(match(mapItem, field, text)) {
         listResult.add(mapItem);
@@ -894,12 +962,12 @@ class NoSQLMock implements INoSQLDB
   
   @Override
   public
-  List<Map<String,Object>> group(String collection, Map<String,?> mapFilter, String field, String groupFunction)
+  List<Map<String, Object>> group(String collection, Map<String, ?> mapFilter, String field, String groupFunction)
       throws Exception
   {
     if(debug) System.out.println(logprefix + "group(" + collection + "," + mapFilter + ",\"" + field + "\",\"" + groupFunction + "\")...");
     
-    List<Map<String,Object>> listResult = new ArrayList<Map<String,Object>>();
+    List<Map<String, Object>> listResult = new ArrayList<Map<String, Object>>();
     
     if(groupFunction == null || groupFunction.length() == 0) {
       return listResult;
@@ -927,11 +995,11 @@ class NoSQLMock implements INoSQLDB
     Map<Object,Object>  mapGroupBy = new HashMap<Object, Object>();
     Map<Object,Integer> mapCounts  = new HashMap<Object, Integer>();
     
-    List<Map<String,Object>> listColData = getCollectionData(dbname, collection, false);
+    List<Map<String, Object>> listColData = getCollectionData(dbname, collection, false);
     
-    Iterator<Map<String,Object>> iterator = listColData.iterator();
+    Iterator<Map<String, Object>> iterator = listColData.iterator();
     while(iterator.hasNext()) {
-      Map<String,Object> mapItem = iterator.next();
+      Map<String, Object> mapItem = iterator.next();
       if(mapItem == null) continue;
       if(match(mapItem, mapFilter)) {
         Object val = mapItem.get(field);
@@ -1041,7 +1109,7 @@ class NoSQLMock implements INoSQLDB
         }
       }
       
-      Map<String,Object> mapRecord = new HashMap<String, Object>(2);
+      Map<String, Object> mapRecord = new HashMap<String, Object>(2);
       mapRecord.put(field,   key);
       mapRecord.put("value", val);
       
@@ -1054,15 +1122,15 @@ class NoSQLMock implements INoSQLDB
   
   @Override
   public
-  Map<String,Object> read(String collection, String id)
+  Map<String, Object> read(String collection, String id)
       throws Exception
   {
     if(debug) System.out.println(logprefix + "read(" + collection + "," + id + ")...");
     
-    List<Map<String,Object>> listColData = getCollectionData(dbname, collection, false);
+    List<Map<String, Object>> listColData = getCollectionData(dbname, collection, false);
     
     for(int i = 0; i < listColData.size(); i++) {
-      Map<String,Object> mapItem = listColData.get(i);
+      Map<String, Object> mapItem = listColData.get(i);
       if(mapItem == null) continue;
       String sId = (String) mapItem.get("_id");
       if(sId != null && sId.equals(id)) {
@@ -1077,18 +1145,18 @@ class NoSQLMock implements INoSQLDB
   
   @Override
   public
-  int count(String collection, Map<String,?> mapFilter)
+  int count(String collection, Map<String, ?> mapFilter)
       throws Exception
   {
     if(debug) System.out.println(logprefix + "count(" + collection + "," + mapFilter + ")...");
     
     int result = 0;
     
-    List<Map<String,Object>> listColData = getCollectionData(dbname, collection, false);
+    List<Map<String, Object>> listColData = getCollectionData(dbname, collection, false);
     
-    Iterator<Map<String,Object>> iterator = listColData.iterator();
+    Iterator<Map<String, Object>> iterator = listColData.iterator();
     while(iterator.hasNext()) {
-      Map<String,Object> mapItem = iterator.next();
+      Map<String, Object> mapItem = iterator.next();
       if(mapItem == null) continue;
       if(match(mapItem, mapFilter)) {
         result++;
@@ -1112,26 +1180,26 @@ class NoSQLMock implements INoSQLDB
   
   @Override
   public 
-  List<Map<String,Object>> listIndexes(String collection) 
+  List<Map<String, Object>> listIndexes(String collection) 
       throws Exception
   {
     if(debug) System.out.println(logprefix + "listIndexes(" + collection + ")...");
-    List<Map<String,Object>> listResult = new ArrayList<Map<String,Object>>();
+    List<Map<String, Object>> listResult = new ArrayList<Map<String, Object>>();
     if(debug) System.out.println(logprefix + "listIndexes(" + collection + ") -> " + listResult);
     return listResult;
   }
   
   @Override
   public
-  String writeFile(String filename, byte[] content, Map<String,?> mapMetadata)
-      throws Exception
+  String writeFile(String filename, byte[] content, Map<String, ?> mapAttributes, Map<String, ?> mapMetadata)
+    throws Exception
   {
     if(debug) {
       if(content == null) {
-        System.out.println(logprefix + "writeFile(" + filename + ",null," + mapMetadata + ")...");
+        System.out.println(logprefix + "writeFile(" + filename + ",null," + mapAttributes + "," + mapMetadata + ")...");
       }
       else {
-        System.out.println(logprefix + "writeFile(" + filename + ",byte[" + content.length + "]," + mapMetadata + ")...");
+        System.out.println(logprefix + "writeFile(" + filename + ",byte[" + content.length + "]," + mapAttributes + "," + mapMetadata + ")...");
       }
     }
     
@@ -1146,11 +1214,14 @@ class NoSQLMock implements INoSQLDB
     
     saveContent(content, filePath);
     
-    List<Map<String,Object>> listColData = getCollectionData(dbname, "fs.files", true);
+    List<Map<String, Object>> listColData = getCollectionData(dbname, "fs.files", true);
     
-    Map<String,Object> mapFile = new HashMap<String, Object>();
+    Map<String, Object> mapFile = new HashMap<String, Object>();
+    if(mapAttributes != null && !mapAttributes.isEmpty()) {
+      mapFile.putAll(mapAttributes);
+    }
     if(mapMetadata != null && !mapMetadata.isEmpty()) {
-      mapFile.putAll(mapMetadata);
+      mapFile.put("metadata", mapMetadata);
     }
     mapFile.put("_id",            id);
     mapFile.put(FILE_NAME,        filename);
@@ -1162,10 +1233,10 @@ class NoSQLMock implements INoSQLDB
     
     if(debug) {
       if(content == null) {
-        System.out.println(logprefix + "writeFile(" + filename + ",null," + mapMetadata + ") -> " + id);
+        System.out.println(logprefix + "writeFile(" + filename + ",null," + mapAttributes + "," + mapMetadata + ") -> " + id);
       }
       else {
-        System.out.println(logprefix + "writeFile(" + filename + ",byte[" + content.length + "]," + mapMetadata + ") -> " + id);
+        System.out.println(logprefix + "writeFile(" + filename + ",byte[" + content.length + "]," + mapAttributes + "," + mapMetadata + ") -> " + id);
       }
     }
     return id;
@@ -1173,39 +1244,39 @@ class NoSQLMock implements INoSQLDB
   
   @Override
   public
-  List<Map<String,Object>> findFiles(String filename, Map<String,?> mapMetadata)
+  List<Map<String, Object>> findFiles(String filename, Map<String, ?> mapFilter)
       throws Exception
   {
-    if(debug) System.out.println(logprefix + "findFiles(" + filename + "," + mapMetadata + ")...");
+    if(debug) System.out.println(logprefix + "findFiles(" + filename + "," + mapFilter + ")...");
     
-    List<Map<String,Object>> listResult = new ArrayList<Map<String,Object>>();
+    List<Map<String, Object>> listResult = new ArrayList<Map<String, Object>>();
     
-    List<Map<String,Object>> listColData = getCollectionData(dbname, "fs.files", false);
+    List<Map<String, Object>> listColData = getCollectionData(dbname, "fs.files", false);
     
-    Map<String,Object> mapFilter = new HashMap<String, Object>();
-    if(mapMetadata != null && !mapMetadata.isEmpty()) {
-      mapFilter.putAll(mapMetadata);
+    Map<String, Object> mapQuery = new HashMap<String, Object>();
+    if(mapFilter != null && !mapFilter.isEmpty()) {
+      mapQuery.putAll(mapFilter);
     }
     if(filename != null && filename.length() > 0) {
-      mapFilter.put(FILE_NAME, filename.replace('*', '%'));
+      mapQuery.put(FILE_NAME, filename.replace('*', '%'));
     }
     
-    Iterator<Map<String,Object>> iterator = listColData.iterator();
+    Iterator<Map<String, Object>> iterator = listColData.iterator();
     while(iterator.hasNext()) {
-      Map<String,Object> mapItem = iterator.next();
+      Map<String, Object> mapItem = iterator.next();
       if(mapItem == null) continue;
-      if(match(mapItem, mapFilter)) {
+      if(match(mapItem, mapQuery)) {
         listResult.add(mapItem);
       }
     }
     
-    if(debug) System.out.println(logprefix + "findFiles(" + filename + "," + mapMetadata + ") -> " + listResult.size() + " files");
+    if(debug) System.out.println(logprefix + "findFiles(" + filename + "," + mapFilter + ") -> " + listResult.size() + " files");
     return listResult;
   }
   
   @Override
   public
-  Map<String,Object> readFile(String filename)
+  Map<String, Object> readFile(String filename)
       throws Exception
   {
     if(debug) System.out.println(logprefix + "readFile(" + filename + ")...");
@@ -1224,10 +1295,10 @@ class NoSQLMock implements INoSQLDB
       return new HashMap<String, Object>();
     }
     
-    List<Map<String,Object>> listColData = getCollectionData(dbname, "fs.files", false);
+    List<Map<String, Object>> listColData = getCollectionData(dbname, "fs.files", false);
     
     for(int i = 0; i < listColData.size(); i++) {
-      Map<String,Object> mapItem = listColData.get(i);
+      Map<String, Object> mapItem = listColData.get(i);
       if(mapItem == null) continue;
       String sFileName = (String) mapItem.get(FILE_NAME);
       if(sFileName != null && sFileName.equals(filename)) {
@@ -1236,7 +1307,7 @@ class NoSQLMock implements INoSQLDB
       }
     }
     
-    Map<String,Object> mapResult = new HashMap<String, Object>();
+    Map<String, Object> mapResult = new HashMap<String, Object>();
     mapResult.put(FILE_NAME,    filename);
     mapResult.put(FILE_CONTENT, content);
     mapResult.put(FILE_LENGTH,  content.length);
@@ -1267,11 +1338,11 @@ class NoSQLMock implements INoSQLDB
       result = file.delete();
     }
     
-    List<Map<String,Object>> listColData = getCollectionData(dbname, "fs.files", false);
+    List<Map<String, Object>> listColData = getCollectionData(dbname, "fs.files", false);
     
     int iIndexOf = -1;
     for(int i = 0; i < listColData.size(); i++) {
-      Map<String,Object> mapItem = listColData.get(i);
+      Map<String, Object> mapItem = listColData.get(i);
       if(mapItem == null) continue;
       String sFileName = (String) mapItem.get(FILE_NAME);
       if(sFileName != null && sFileName.equals(filename)) {
@@ -1310,10 +1381,10 @@ class NoSQLMock implements INoSQLDB
       result = file.renameTo(new File(fileDest));
     }
     
-    List<Map<String,Object>> listColData = getCollectionData(dbname, "fs.files", false);
+    List<Map<String, Object>> listColData = getCollectionData(dbname, "fs.files", false);
     
     for(int i = 0; i < listColData.size(); i++) {
-      Map<String,Object> mapItem = listColData.get(i);
+      Map<String, Object> mapItem = listColData.get(i);
       if(mapItem == null) continue;
       String sFileName = (String) mapItem.get(FILE_NAME);
       if(sFileName != null && sFileName.equals(filename)) {
@@ -1326,29 +1397,29 @@ class NoSQLMock implements INoSQLDB
   }
   
   protected static
-  List<Map<String,Object>> getCollectionData(String dbname, String collection, boolean createIfNotExists)
+  List<Map<String, Object>> getCollectionData(String dbname, String collection, boolean createIfNotExists)
   {
-    List<Map<String,Object>> listColData = null;
+    List<Map<String, Object>> listColData = null;
     
-    if(data == null) data = new HashMap<String, Map<String,List<Map<String,Object>>>>();
+    if(data == null) data = new HashMap<String, Map<String,List<Map<String, Object>>>>();
     
-    Map<String,List<Map<String,Object>>> mapColData = data.get(dbname);
+    Map<String,List<Map<String, Object>>> mapColData = data.get(dbname);
     if(mapColData == null) {
       if(!createIfNotExists) {
-        return new ArrayList<Map<String,Object>>();
+        return new ArrayList<Map<String, Object>>();
       }
-      mapColData = new HashMap<String,List<Map<String,Object>>>();
+      mapColData = new HashMap<String,List<Map<String, Object>>>();
       data.put(dbname, mapColData);
-      listColData = new ArrayList<Map<String,Object>>();
+      listColData = new ArrayList<Map<String, Object>>();
       mapColData.put(collection, listColData);
     }
     else {
       listColData = mapColData.get(collection);
       if(listColData == null) {
         if(!createIfNotExists) {
-          return new ArrayList<Map<String,Object>>();
+          return new ArrayList<Map<String, Object>>();
         }
-        listColData = new ArrayList<Map<String,Object>>();
+        listColData = new ArrayList<Map<String, Object>>();
         mapColData.put(collection, listColData);
       }
     }
@@ -1600,12 +1671,12 @@ class NoSQLMock implements INoSQLDB
   }
   
   protected static
-  Map<String,Object> mapObject(Map map)
+  Map<String, Object> mapObject(Map map)
   {
     if(map == null) {
       return new HashMap<String, Object>();
     }
-    return (Map<String,Object>) map;
+    return (Map<String, Object>) map;
   }
   
   protected static
@@ -1706,7 +1777,7 @@ class NoSQLMock implements INoSQLDB
     String firstDatabase = null;
     
     // Load content
-    Map<String,Object> mapContent = null;
+    Map<String, Object> mapContent = null;
     File file = new File(filePath);
     if(file.exists()) {
       byte[] content = readContent(filePath);
@@ -1722,7 +1793,7 @@ class NoSQLMock implements INoSQLDB
     }
     
     // Clear data
-    if(data == null) data = new HashMap<String, Map<String,List<Map<String,Object>>>>();
+    if(data == null) data = new HashMap<String, Map<String,List<Map<String, Object>>>>();
     data.clear();
     
     // Import data
@@ -1736,7 +1807,7 @@ class NoSQLMock implements INoSQLDB
       // Check database data
       if(sDatabase.length() == 0) continue;
       if(!(collections instanceof Map)) continue;
-      Map<String,Object> mapCollections = WUtil.toMapObject(collections);
+      Map<String, Object> mapCollections = WUtil.toMapObject(collections);
       if(mapCollections == null) continue;
       
       Iterator<Map.Entry<String, Object>> iteratorCol = mapCollections.entrySet().iterator();
@@ -1749,12 +1820,12 @@ class NoSQLMock implements INoSQLDB
         // Check collection data
         if(sCollection.length() == 0) continue;
         if(!(collectionData instanceof List)) continue;
-        List<Map<String,Object>> listCollectionData = WUtil.toListOfMapObject(collectionData);
+        List<Map<String, Object>> listCollectionData = WUtil.toListOfMapObject(collectionData);
         if(listCollectionData == null) continue;
         
-        Map<String,List<Map<String,Object>>> mapDBDataCollection = data.get(sDatabase);
+        Map<String,List<Map<String, Object>>> mapDBDataCollection = data.get(sDatabase);
         if(mapDBDataCollection == null) {
-          mapDBDataCollection = new HashMap<String, List<Map<String,Object>>>();
+          mapDBDataCollection = new HashMap<String, List<Map<String, Object>>>();
           data.put(sDatabase, mapDBDataCollection);
           result[0]++;
           firstDatabase = sDatabase;

@@ -98,12 +98,12 @@ class NoSQLMongoDB3 implements INoSQLDB
   
   @Override
   public 
-  Map<String,Object> load(Map<String,Object> mapOptions)
+  Map<String, Object> load(Map<String, Object> mapOptions)
     throws Exception
   {
     if(debug) System.out.println(logprefix + "load(" + mapOptions + ")...");
     
-    Map<String,Object> mapResult = getInfo();
+    Map<String, Object> mapResult = getInfo();
     
     if(debug) System.out.println(logprefix + "load(" + mapOptions + ") -> " + mapResult);
     return mapResult;
@@ -111,7 +111,7 @@ class NoSQLMongoDB3 implements INoSQLDB
   
   @Override
   public 
-  boolean save(Map<String,Object> mapOptions)
+  boolean save(Map<String, Object> mapOptions)
     throws Exception
   {
     if(debug) System.out.println(logprefix + "save(" + mapOptions + ")...");
@@ -124,12 +124,12 @@ class NoSQLMongoDB3 implements INoSQLDB
   
   @Override
   public
-  Map<String,Object> getInfo()
+  Map<String, Object> getInfo()
     throws Exception
   {
     if(debug) System.out.println(logprefix + "getInfo()...");
     
-    Map<String,Object> mapResult = new HashMap<String,Object> (2);
+    Map<String, Object> mapResult = new HashMap<String, Object> (2);
     
     Document buildinfo = db.runCommand(new Document("buildInfo", 1));
     if(buildinfo != null) {
@@ -182,7 +182,7 @@ class NoSQLMongoDB3 implements INoSQLDB
   
   @Override
   public
-  String insert(String collection, Map<String,?> mapData)
+  String insert(String collection, Map<String, ?> mapData)
     throws Exception
   {
     if(debug) System.out.println(logprefix + "insert(" + collection + "," + mapData + ")...");
@@ -202,7 +202,7 @@ class NoSQLMongoDB3 implements INoSQLDB
   
   @Override
   public
-  String insert(String collection, Map<String,?> mapData, boolean refresh)
+  String insert(String collection, Map<String, ?> mapData, boolean refresh)
     throws Exception
   {
     if(debug) System.out.println(logprefix + "insert(" + collection + "," + mapData + "," + refresh + ")...");
@@ -222,7 +222,7 @@ class NoSQLMongoDB3 implements INoSQLDB
   
   @Override
   public
-  int bulkIns(String collection, List<Map<String,?>> listData)
+  int bulkIns(String collection, List<Map<String, ?>> listData)
     throws Exception
   {
     if(debug) {
@@ -247,7 +247,7 @@ class NoSQLMongoDB3 implements INoSQLDB
     
     List<InsertOneModel<Document>> listOfWriteModel = new ArrayList<InsertOneModel<Document>> (listData.size());
     for(int i = 0; i < listData.size(); i++) {
-      Map<String,?> mapData = listData.get(i);
+      Map<String, ?> mapData = listData.get(i);
       Document document = toDocument(mapData);
       if(debug) System.out.println(logprefix + "bulkIns listOfWriteModel.add(new InsertOneModel(" + document + "))...");
       listOfWriteModel.add(new InsertOneModel<Document> (document));
@@ -263,7 +263,7 @@ class NoSQLMongoDB3 implements INoSQLDB
   
   @Override
   public
-  boolean replace(String collection, Map<String,?> mapData, String id)
+  boolean replace(String collection, Map<String, ?> mapData, String id)
     throws Exception
   {
     if(debug) System.out.println(logprefix + "replace(" + collection + "," + mapData + "," + id + ")...");
@@ -285,7 +285,7 @@ class NoSQLMongoDB3 implements INoSQLDB
   
   @Override
   public
-  int update(String collection, Map<String,?> mapData, String id)
+  int update(String collection, Map<String, ?> mapData, String id)
     throws Exception
   {
     if(debug) System.out.println(logprefix + "update(" + collection + "," + mapData + "," + id + ")...");
@@ -314,7 +314,7 @@ class NoSQLMongoDB3 implements INoSQLDB
   
   @Override
   public
-  int update(String collection, Map<String,?> mapData, Map<String,?> mapFilter)
+  int update(String collection, Map<String, ?> mapData, Map<String, ?> mapFilter)
     throws Exception
   {
     if(debug) System.out.println(logprefix + "update(" + collection + "," + mapData + "," + mapFilter + ")...");
@@ -343,7 +343,7 @@ class NoSQLMongoDB3 implements INoSQLDB
   
   @Override
   public
-  String upsert(String collection, Map<String,?> mapData, Map<String,?> mapFilter)
+  String upsert(String collection, Map<String, ?> mapData, Map<String, ?> mapFilter)
     throws Exception
   {
     if(debug) System.out.println(logprefix + "upsert(" + collection + "," + mapData + "," + mapFilter + ")...");
@@ -453,7 +453,7 @@ class NoSQLMongoDB3 implements INoSQLDB
   
   @Override
   public
-  int inc(String collection, Map<String,?> mapFilter, String field, Number value)
+  int inc(String collection, Map<String, ?> mapFilter, String field, Number value)
     throws Exception
   {
     if(debug) System.out.println(logprefix + "inc(" + collection + "," + mapFilter + "," + field + "," + value + ")...");
@@ -475,7 +475,7 @@ class NoSQLMongoDB3 implements INoSQLDB
   
   @Override
   public
-  int inc(String collection, Map<String,?> mapFilter, String field1, Number value1, String field2, Number value2)
+  int inc(String collection, Map<String, ?> mapFilter, String field1, Number value1, String field2, Number value2)
     throws Exception
   {
     if(debug) System.out.println(logprefix + "inc(" + collection + "," + mapFilter + "," + field1 + "," + value1 + "," + field2 + "," + value2 + ")...");
@@ -528,7 +528,7 @@ class NoSQLMongoDB3 implements INoSQLDB
   
   @Override
   public
-  int delete(String collection, Map<String,?> mapFilter)
+  int delete(String collection, Map<String, ?> mapFilter)
     throws Exception
   {
     if(debug) System.out.println(logprefix + "delete(" + collection + "," + mapFilter + ")...");
@@ -548,7 +548,7 @@ class NoSQLMongoDB3 implements INoSQLDB
   
   @Override
   public
-  List<Map<String,Object>> find(String collection, Map<String,?> mapFilter, String fields)
+  List<Map<String, Object>> find(String collection, Map<String, ?> mapFilter, String fields)
     throws Exception
   {
     if(debug) System.out.println(logprefix + "find(" + collection + "," + mapFilter + ",\"" + fields + "\")...");
@@ -572,7 +572,7 @@ class NoSQLMongoDB3 implements INoSQLDB
       }
     }
     
-    List<Map<String,Object>> listResult = new ArrayList<Map<String,Object>> ();
+    List<Map<String, Object>> listResult = new ArrayList<Map<String, Object>> ();
     MongoCursor<Document> mongoCursor = null;
     try {
       MongoCollection<Document> mongoCollection = db.getCollection(collection);
@@ -612,7 +612,7 @@ class NoSQLMongoDB3 implements INoSQLDB
   
   @Override
   public
-  List<Map<String,Object>> find(String collection, Map<String,?> mapFilter, String fields, String orderBy, int limit)
+  List<Map<String, Object>> find(String collection, Map<String, ?> mapFilter, String fields, String orderBy, int limit)
     throws Exception
   {
     if(debug) System.out.println(logprefix + "find(" + collection + "," + mapFilter + ",\"" + fields + "\",\"" + orderBy + "\"," + limit + ")...");
@@ -637,7 +637,7 @@ class NoSQLMongoDB3 implements INoSQLDB
     }
     if(limit < 1) limit = defLimit;
     
-    List<Map<String,Object>> listResult = new ArrayList<Map<String,Object>> ();
+    List<Map<String, Object>> listResult = new ArrayList<Map<String, Object>> ();
     MongoCursor<Document> mongoCursor = null;
     try {
       MongoCollection<Document> mongoCollection = db.getCollection(collection);
@@ -698,12 +698,124 @@ class NoSQLMongoDB3 implements INoSQLDB
   
   @Override
   public
-  List<Map<String,Object>> search(String collection, String field, String text)
+  List<Map<String, Object>> find(String collection, Map<String, ?> mapFilter, String fields, String orderBy, int limit, int skip)
+    throws Exception
+  {
+    if(debug) System.out.println(logprefix + "find(" + collection + "," + mapFilter + ",\"" + fields + "\",\"" + orderBy + "\"," + limit + "," + skip + ")...");
+    
+    Document projection = null;
+    String[] toexcl = null;
+    String[] asproj = null;
+    if(mapFilter != null) {
+      toexcl = WUtil.toArrayOfString(mapFilter.get(FILTER_EXCLUDE), false);
+      if(fields == null || fields.length() == 0 || fields.equals("*")) {
+        asproj = WUtil.toArrayOfString(mapFilter.get(FILTER_FIELDS), false);
+      }
+      else {
+        asproj = WUtil.toArrayOfString(fields, false);
+      }
+      if(asproj != null && asproj.length > 0) {
+        projection = new Document();
+        for(int i = 0; i < asproj.length; i++) {
+          projection.put(asproj[i], 1);
+        }
+      }
+    }
+    if(limit < 1) limit = defLimit;
+    
+    List<Map<String, Object>> listResult = new ArrayList<Map<String, Object>> ();
+    MongoCursor<Document> mongoCursor = null;
+    try {
+      MongoCollection<Document> mongoCollection = db.getCollection(collection);
+      
+      BasicDBObject filter = buildQueryFilter(mapFilter);
+      
+      if(orderBy != null && orderBy.length() > 0) {
+        BasicDBObject dbsort = new BasicDBObject();
+        int iIndexOf = 0;
+        int iBegin   = 0;
+        iIndexOf     = orderBy.indexOf(',');
+        while(iIndexOf >= 0) {
+          String sOrderClause = orderBy.substring(iBegin, iIndexOf).trim();
+          dbsort.append(getOrderField(sOrderClause), getOrderType(sOrderClause));
+          iBegin   = iIndexOf + 1;
+          iIndexOf = orderBy.indexOf(',', iBegin);
+        }
+        String sOrderClause = orderBy.substring(iBegin).trim();
+        dbsort.append(getOrderField(sOrderClause), getOrderType(sOrderClause));
+        if(projection != null) {
+          if(skip > 0) {
+            if(debug) System.out.println(logprefix + "find " + collection + ".find(" + filter + ").sort(" + dbsort + ").skip(" + skip + ").limit(" + limit + ").projection(" + projection + ")");
+            mongoCursor = mongoCollection.find(filter).sort(dbsort).skip(skip).limit(limit).projection(projection).iterator();
+          }
+          else {
+            if(debug) System.out.println(logprefix + "find " + collection + ".find(" + filter + ").sort(" + dbsort + ").limit(" + limit + ").projection(" + projection + ")");
+            mongoCursor = mongoCollection.find(filter).sort(dbsort).limit(limit).projection(projection).iterator();
+          }
+        }
+        else {
+          if(skip > 0) {
+            if(debug) System.out.println(logprefix + "find " + collection + ".find(" + filter + ").sort(" + dbsort + ").skip(" + skip + ").limit(" + limit + ")");
+            mongoCursor = mongoCollection.find(filter).sort(dbsort).skip(skip).limit(limit).iterator();
+          }
+          else {
+            if(debug) System.out.println(logprefix + "find " + collection + ".find(" + filter + ").sort(" + dbsort + ").limit(" + limit + ")");
+            mongoCursor = mongoCollection.find(filter).sort(dbsort).limit(limit).iterator();
+          }
+        }
+      }
+      else {
+        if(projection != null) {
+          if(skip > 0) {
+            if(debug) System.out.println(logprefix + "find " + collection + ".find(" + filter + ").skip(" + skip + ").limit(" + limit + ").projection(" + projection + ")");
+            mongoCursor = mongoCollection.find(filter).skip(skip).limit(limit).projection(projection).iterator();
+          }
+          else {
+            if(debug) System.out.println(logprefix + "find " + collection + ".find(" + filter + ").limit(" + limit + ").projection(" + projection + ")");
+            mongoCursor = mongoCollection.find(filter).limit(limit).projection(projection).iterator();
+          }
+        }
+        else {
+          if(skip > 0) {
+            if(debug) System.out.println(logprefix + "find " + collection + ".find(" + filter + ").skip(" + skip + ").limit(" + limit + ")");
+            mongoCursor = mongoCollection.find(filter).skip(skip).limit(limit).iterator();
+          }
+          else {
+            if(debug) System.out.println(logprefix + "find " + collection + ".find(" + filter + ").limit(" + limit + ")");
+            mongoCursor = mongoCollection.find(filter).limit(limit).iterator();
+          }
+        }
+      }
+      while(mongoCursor.hasNext()) {
+        Document document = mongoCursor.next();
+        if(toexcl != null) {
+          for(int i = 0; i < toexcl.length; i++) {
+            document.remove(toexcl[i]);
+          }
+        }
+        Object _id = document.get("_id");
+        if(_id instanceof ObjectId) {
+          _id = ((ObjectId) _id).toHexString();
+        }
+        if(_id != null) document.put("_id", _id);
+        listResult.add(document);
+      }
+    }
+    finally {
+      if(mongoCursor != null) try{ mongoCursor.close(); } catch(Exception ex) {}
+    }
+    if(debug) System.out.println(logprefix + "find(" + collection + "," + mapFilter + ",\"" + fields + "\",\"" + orderBy + "\"," + limit + "," + skip + ") -> " + listResult.size() + " documents");
+    return listResult;
+  }
+  
+  @Override
+  public
+  List<Map<String, Object>> search(String collection, String field, String text)
     throws Exception
   {
     if(debug) System.out.println(logprefix + "search(" + collection + "," + field + "," + text + ")...");
     
-    List<Map<String,Object>> listResult = new ArrayList<Map<String,Object>> ();
+    List<Map<String, Object>> listResult = new ArrayList<Map<String, Object>> ();
     MongoCursor<Document> mongoCursor = null;
     try {
       MongoCollection<Document> mongoCollection = db.getCollection(collection);
@@ -740,12 +852,12 @@ class NoSQLMongoDB3 implements INoSQLDB
   
   @Override
   public
-  List<Map<String,Object>> group(String collection, Map<String,?> mapFilter, String field, String groupFunction)
+  List<Map<String, Object>> group(String collection, Map<String, ?> mapFilter, String field, String groupFunction)
     throws Exception
   {
     if(debug) System.out.println(logprefix + "group(" + collection + "," + mapFilter + ",\"" + field + "\",\"" + groupFunction + "\")...");
     
-    List<Map<String,Object>> listResult = new ArrayList<Map<String,Object>> ();
+    List<Map<String, Object>> listResult = new ArrayList<Map<String, Object>> ();
     MongoCursor<Document> mongoCursor = null;
     try {
       MongoCollection<Document> mongoCollection = db.getCollection(collection);
@@ -834,9 +946,9 @@ class NoSQLMongoDB3 implements INoSQLDB
       mapResult.put("_id", _id.toString());
     }
     
-    Iterator<Map.Entry<String,Object>> iterator = mapResult.entrySet().iterator();
+    Iterator<Map.Entry<String, Object>> iterator = mapResult.entrySet().iterator();
     while(iterator.hasNext()) {
-      Map.Entry<String,Object> entry = iterator.next();
+      Map.Entry<String, Object> entry = iterator.next();
       Object value = entry.getValue();
       if(value instanceof org.bson.types.Binary) {
         org.bson.types.Binary bynary = (org.bson.types.Binary) value;
@@ -850,7 +962,7 @@ class NoSQLMongoDB3 implements INoSQLDB
   
   @Override
   public
-  int count(String collection, Map<String,?> mapFilter)
+  int count(String collection, Map<String, ?> mapFilter)
     throws Exception
   {
     if(debug) System.out.println(logprefix + "count(" + collection + "," + mapFilter + ")...");
@@ -891,12 +1003,12 @@ class NoSQLMongoDB3 implements INoSQLDB
   
   @Override
   public
-  List<Map<String,Object>> listIndexes(String collection) 
+  List<Map<String, Object>> listIndexes(String collection) 
     throws Exception
   {
     if(debug) System.out.println(logprefix + "listIndexes(" + collection + ")...");
     
-    List<Map<String,Object>> listResult = new ArrayList<Map<String,Object>>();
+    List<Map<String, Object>> listResult = new ArrayList<Map<String, Object>>();
     
     MongoCollection<Document> mongoCollection = db.getCollection(collection);
     
@@ -915,15 +1027,15 @@ class NoSQLMongoDB3 implements INoSQLDB
   
   @Override
   public
-  String writeFile(String filename, byte[] content, Map<String,?> mapMetadata)
+  String writeFile(String filename, byte[] content, Map<String, ?> mapAttributes, Map<String, ?> mapMetadata)
     throws Exception
   {
     if(debug) {
       if(content == null) {
-        System.out.println(logprefix + "writeFile(" + filename + ",null," + mapMetadata + ")...");
+        System.out.println(logprefix + "writeFile(" + filename + ",null," + mapAttributes + "," + mapMetadata + ")...");
       }
       else {
-        System.out.println(logprefix + "writeFile(" + filename + ",byte[" + content.length + "]," + mapMetadata + ")...");
+        System.out.println(logprefix + "writeFile(" + filename + ",byte[" + content.length + "]," + mapAttributes + "," + mapMetadata + ")...");
       }
     }
     
@@ -942,6 +1054,22 @@ class NoSQLMongoDB3 implements INoSQLDB
     if(mapMetadata != null && !mapMetadata.isEmpty()) {
       options.metadata(toDocument(mapMetadata));
     }
+    if(mapAttributes != null && !mapAttributes.isEmpty()) {
+      Document optMetadata = options.getMetadata();
+      if(optMetadata == null) {
+        optMetadata = toDocument(mapAttributes);
+        options.metadata(optMetadata);
+      }
+      else {
+        Iterator<String> iterator = mapAttributes.keySet().iterator();
+        while(iterator.hasNext()) {
+          String key = iterator.next();
+          Object val = mapAttributes.get(key);
+          optMetadata.put(key, val);
+        }
+        options.metadata(optMetadata);
+      }
+    }
     
     GridFSUploadStream uploadStream = null;
     try {
@@ -954,10 +1082,10 @@ class NoSQLMongoDB3 implements INoSQLDB
     String id = uploadStream.getObjectId().toHexString();
     if(debug) {
       if(content == null) {
-        System.out.println(logprefix + "writeFile(" + filename + ",null," + mapMetadata + ") -> " + id);
+        System.out.println(logprefix + "writeFile(" + filename + ",null," + mapAttributes + "," + mapMetadata + ") -> " + id);
       }
       else {
-        System.out.println(logprefix + "writeFile(" + filename + ",byte[" + content.length + "]," + mapMetadata + ") -> " + id);
+        System.out.println(logprefix + "writeFile(" + filename + ",byte[" + content.length + "]," + mapAttributes + "," + mapMetadata + ") -> " + id);
       }
     }
     return id;
@@ -965,7 +1093,7 @@ class NoSQLMongoDB3 implements INoSQLDB
   
   @Override
   public
-  List<Map<String,Object>> findFiles(String filename, Map<String,?> mapMetadata)
+  List<Map<String, Object>> findFiles(String filename, Map<String, ?> mapMetadata)
     throws Exception
   {
     if(debug) System.out.println(logprefix + "findFiles(" + filename + "," + mapMetadata + ")...");
@@ -981,7 +1109,7 @@ class NoSQLMongoDB3 implements INoSQLDB
     }
     BasicDBObject filter = buildQueryFilter(mapFilter);
     
-    List<Map<String,Object>> listResult = new ArrayList<Map<String,Object>> ();
+    List<Map<String, Object>> listResult = new ArrayList<Map<String, Object>> ();
     MongoCursor<GridFSFile> mongoCursor = null;
     try {
       GridFSFindIterable gridFSFindIterable = gridFSBucket.find(filter);
@@ -994,7 +1122,7 @@ class NoSQLMongoDB3 implements INoSQLDB
       while(mongoCursor.hasNext()) {
         GridFSFile gridFSFile = mongoCursor.next();
         
-        Map<String,Object> mapRecord = new HashMap<String,Object> ();
+        Map<String, Object> mapRecord = new HashMap<String, Object> ();
         Map mapFileMetadata = gridFSFile.getMetadata();
         if(mapFileMetadata != null) mapRecord.putAll(mapFileMetadata);
         mapRecord.put(FILE_NAME,        gridFSFile.getFilename());
@@ -1014,14 +1142,14 @@ class NoSQLMongoDB3 implements INoSQLDB
   
   @Override
   public
-  Map<String,Object> readFile(String filename)
+  Map<String, Object> readFile(String filename)
     throws Exception
   {
     if(debug) System.out.println(logprefix + "readFile(" + filename + ")...");
     
     GridFSBucket gridFSBucket = GridFSBuckets.create(db);
     
-    Map<String,Object> mapResult = null;
+    Map<String, Object> mapResult = null;
     GridFSDownloadStream downloadStream = null;
     try {
       downloadStream = gridFSBucket.openDownloadStream(filename);
@@ -1044,7 +1172,7 @@ class NoSQLMongoDB3 implements INoSQLDB
         pos += read;
       }
       
-      mapResult = new HashMap<String,Object>();
+      mapResult = new HashMap<String, Object>();
       
       Map mapFileMetadata = gridFSFile.getMetadata();
       if(mapFileMetadata != null) mapResult.putAll(mapFileMetadata);
@@ -1276,6 +1404,15 @@ class NoSQLMongoDB3 implements INoSQLDB
       
       if(value == null || "null".equals(value)) {
         if(boNE) {
+          result.put(sKey, new BasicDBObject("$ne", null));
+        }
+        else {
+          result.put(sKey, null);
+        }
+        continue;
+      }
+      else if("?".equals(value)) {
+        if(boNE) {
           result.put(sKey, new BasicDBObject("$exists", true));
         }
         else {
@@ -1397,7 +1534,7 @@ class NoSQLMongoDB3 implements INoSQLDB
   }
   
   protected static
-  void normalizeMap(Map<String,Object> mapData)
+  void normalizeMap(Map<String, Object> mapData)
   {
     if(mapData == null || mapData.isEmpty()) return;
     Iterator<Map.Entry<String, Object>> iterator = mapData.entrySet().iterator();

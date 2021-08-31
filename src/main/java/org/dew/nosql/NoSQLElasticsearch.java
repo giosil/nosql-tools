@@ -1187,8 +1187,7 @@ class NoSQLElasticsearch implements INoSQLDB
           Object oValue = mapAlias.get("value");
           if(oValue != null) mapRecord.put("value", oValue);
         }
-        else
-        if(oAlias != null) {
+        else if(oAlias != null) {
           mapRecord.put("value", oAlias);
         }
         Object oDocCount = mapItem.get("doc_count");
@@ -1421,8 +1420,7 @@ class NoSQLElasticsearch implements INoSQLDB
     if(type == null || type.length() == 0) {
       return "http://" + host + ":" + port + "/" + index + "/";
     }
-    else
-    if(type.equals("..")) {
+    else if(type.equals("..")) {
       return "http://" + host + ":" + port;
     }
     if(id != null) {

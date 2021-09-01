@@ -197,7 +197,7 @@ class NoSQLElasticsearch implements INoSQLDB
     
     WMap resGET = null;
     try {
-      resGET = http("GET", url, null);
+      resGET = http("GET", url + "?include_type_name=true", null);
     }
     catch(Exception ex) {
       String message = ex.getMessage();
@@ -252,7 +252,7 @@ class NoSQLElasticsearch implements INoSQLDB
     
     WMap resPUT = http("PUT", url, data);
     
-    String result = resPUT.getBoolean("created") ? id : null;
+    String result = isCreated(resPUT) ? id : null;
     if(debug) System.out.println(logprefix + "insert(" + collection + "," + mapData + ") -> " + result);
     return result;
   }
@@ -272,7 +272,7 @@ class NoSQLElasticsearch implements INoSQLDB
     
     WMap resPUT = http("PUT", url, data);
     
-    String result = resPUT.getBoolean("created") ? id : null;
+    String result = isCreated(resPUT) ? id : null;
     if(debug) System.out.println(logprefix + "insert(" + collection + "," + mapData + "," + refresh + ") -> " + result);
     return result;
   }
@@ -337,7 +337,7 @@ class NoSQLElasticsearch implements INoSQLDB
     
     WMap resPUT = http("PUT", url, data);
     
-    boolean result = resPUT.getBoolean("created");
+    boolean result = isCreated(resPUT);
     if(debug) System.out.println(logprefix + "replace(" + collection + "," + mapData + ") -> " + result);
     return result;
   }
@@ -466,7 +466,7 @@ class NoSQLElasticsearch implements INoSQLDB
       
       WMap resPUT = http("PUT", urlI, data);
       
-      if(resPUT.getBoolean("created")) countUpd = 1;
+      if(isCreated(resPUT)) countUpd = 1;
     }
     if(debug) System.out.println(logprefix + "upsert(" + collection + "," + mapData + "," + mapFilter + ") -> " + id);
     return id;
@@ -661,7 +661,7 @@ class NoSQLElasticsearch implements INoSQLDB
     
     WMap resDEL = http("DELETE", urlDEL, null);
     
-    if(resDEL.getBoolean("found")) {
+    if(isDeleted(resDEL)) {
       if(debug) System.out.println(logprefix + "delete(" + collection + "," + id + ") -> 1");
       return 1;
     }
@@ -704,7 +704,7 @@ class NoSQLElasticsearch implements INoSQLDB
       
       WMap resDEL = http("DELETE", urlDEL, null);
       
-      if(resDEL.getBoolean("found")) countDel++;
+      if(isDeleted(resDEL)) countDel++;
     }
     if(debug) System.out.println(logprefix + "delete(" + collection + "," + mapFilter + ") -> " + countDel);
     return countDel;
@@ -736,7 +736,7 @@ class NoSQLElasticsearch implements INoSQLDB
       if(pfields.length() > 0) pfields = "_source=" + pfields;
     }
     
-    boolean addId = fields == null || fields.length() == 0 || fields.indexOf("_id") >= 0;
+    boolean addId = fields == null || fields.length() == 0 || fields.equals("*") || fields.indexOf("_id") >= 0;
     
     String url  = getSearchURL(collection, mapFilter, pfields);
     
@@ -1681,13 +1681,16 @@ class NoSQLElasticsearch implements INoSQLDB
       else {
         if(boStartsWithPerc || boEndsWithPerc) {
           if(boStartsWithPerc && boEndsWithPerc) {
-            sbQ.append(enc(sKey) + ":" + enc("/.*" + sVal.replace("/", "\\/").replace(",", "").replace("%", ".*") + ".*/"));
+            // sbQ.append(enc(sKey) + ":" + enc("/.*" + sVal.replace("/", "\\/").replace(",", "").replace("%", ".*") + ".*/"));
+            sbQ.append(enc(sKey) + ":" + enc("*" + sVal.replace("/", "\\/").replace(",", "").replace("%", "*") + "*"));
           }
           else if(boStartsWithPerc) {
-            sbQ.append(enc(sKey) + ":" + enc("/.*" + sVal.replace("/", "\\/").replace(",", "").replace("%", ".*") + "/"));
+            // sbQ.append(enc(sKey) + ":" + enc("/.*" + sVal.replace("/", "\\/").replace(",", "").replace("%", ".*") + "/"));
+            sbQ.append(enc(sKey) + ":" + enc("*" + sVal.replace("/", "\\/").replace(",", "").replace("%", "*")));
           }
           else if(boEndsWithPerc) {
-            sbQ.append(enc(sKey) + ":" + enc("/" + sVal.replace("/", "\\/").replace(",", "").replace("%", ".*") + ".*/"));
+            // sbQ.append(enc(sKey) + ":" + enc("/" + sVal.replace("/", "\\/").replace(",", "").replace("%", ".*") + ".*/"));
+            sbQ.append(enc(sKey) + ":" + enc(sVal.replace("/", "\\/").replace(",", "").replace("%", ".") + "*"));
           }
         }
         else {
@@ -1745,6 +1748,7 @@ class NoSQLElasticsearch implements INoSQLDB
     if(user != null && user.length() > 0) {
       connection.addRequestProperty("Authorization", "Basic " + Base64Coder.encodeString(user + ":" + pass));
     }
+    connection.addRequestProperty("Content-Type", "application/json");
     if(data != null) {
       connection.setDoOutput(true);
     }
@@ -1966,5 +1970,29 @@ class NoSQLElasticsearch implements INoSQLDB
     catch(Exception ex) {
       throw new RuntimeException(ex);
     }
+  }
+  
+  protected static
+  boolean isCreated(WMap response)
+  {
+    String result = response.getString("result");
+    if(result != null && result.equals("created")) return true;
+    return response.getBoolean("created");
+  }
+  
+  protected static
+  boolean isUpdated(WMap response)
+  {
+    String result = response.getString("result");
+    if(result != null && result.equals("updated")) return true;
+    return response.getBoolean("updated");
+  }
+  
+  protected static
+  boolean isDeleted(WMap response)
+  {
+    String result = response.getString("result");
+    if(result != null && result.equals("deleted")) return true;
+    return response.getBoolean("found");
   }
 }

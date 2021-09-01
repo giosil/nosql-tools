@@ -75,7 +75,9 @@ interface INoSQLDB
   
   public List<Map<String, Object>> listIndexes(String collection) throws Exception;
   
-  public String writeFile(String filename, byte[] content, Map<String, ?> mapAttributes, Map<String, ?> mapMetadata) throws Exception;
+  public String writeFile(String filename, byte[] content, Map<String, ?> mapMetadata) throws Exception;
+  
+  public String writeFile(String filename, byte[] content, Map<String, ?> mapMetadata, Map<String, ?> mapAttributes) throws Exception;
   
   public List<Map<String, Object>> findFiles(String filename, Map<String, ?> mapFilter) throws Exception;
   

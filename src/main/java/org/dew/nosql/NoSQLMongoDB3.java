@@ -63,11 +63,25 @@ class NoSQLMongoDB3 implements INoSQLDB
     this.db = getMongoClient().getDatabase(dbname);
   }
   
+  public NoSQLMongoDB3(boolean debug)
+    throws Exception
+  {
+    this();
+    this.debug = debug;
+  }
+  
   public NoSQLMongoDB3(String dbname)
     throws Exception
   {
     if(dbname == null || dbname.length() == 0) dbname = NoSQLDataSource.getDefaultDbName();
     this.db = getMongoClient().getDatabase(dbname);
+  }
+  
+  public NoSQLMongoDB3(String dbname, boolean debug)
+    throws Exception
+  {
+    this(dbname);
+    this.debug = debug;
   }
   
   public NoSQLMongoDB3(MongoDatabase db)
@@ -80,6 +94,13 @@ class NoSQLMongoDB3 implements INoSQLDB
       String dbname = NoSQLDataSource.getDefaultDbName();
       this.db = getMongoClient().getDatabase(dbname);
     }
+  }
+  
+  public NoSQLMongoDB3(MongoDatabase db, boolean debug)
+    throws Exception
+  {
+    this(db);
+    this.debug = debug;
   }
   
   @Override
@@ -1027,15 +1048,23 @@ class NoSQLMongoDB3 implements INoSQLDB
   
   @Override
   public
-  String writeFile(String filename, byte[] content, Map<String, ?> mapAttributes, Map<String, ?> mapMetadata)
+  String writeFile(String filename, byte[] content, Map<String, ?> mapMetadata)
+    throws Exception
+  {
+    return writeFile(filename, content, mapMetadata, null);
+  }
+  
+  @Override
+  public
+  String writeFile(String filename, byte[] content, Map<String, ?> mapMetadata, Map<String, ?> mapAttributes)
     throws Exception
   {
     if(debug) {
       if(content == null) {
-        System.out.println(logprefix + "writeFile(" + filename + ",null," + mapAttributes + "," + mapMetadata + ")...");
+        System.out.println(logprefix + "writeFile(" + filename + ",null," + mapMetadata + "," + mapAttributes + ")...");
       }
       else {
-        System.out.println(logprefix + "writeFile(" + filename + ",byte[" + content.length + "]," + mapAttributes + "," + mapMetadata + ")...");
+        System.out.println(logprefix + "writeFile(" + filename + ",byte[" + content.length + "]," + mapMetadata + "," + mapAttributes + ")...");
       }
     }
     
@@ -1054,22 +1083,6 @@ class NoSQLMongoDB3 implements INoSQLDB
     if(mapMetadata != null && !mapMetadata.isEmpty()) {
       options.metadata(toDocument(mapMetadata));
     }
-    if(mapAttributes != null && !mapAttributes.isEmpty()) {
-      Document optMetadata = options.getMetadata();
-      if(optMetadata == null) {
-        optMetadata = toDocument(mapAttributes);
-        options.metadata(optMetadata);
-      }
-      else {
-        Iterator<String> iterator = mapAttributes.keySet().iterator();
-        while(iterator.hasNext()) {
-          String key = iterator.next();
-          Object val = mapAttributes.get(key);
-          optMetadata.put(key, val);
-        }
-        options.metadata(optMetadata);
-      }
-    }
     
     GridFSUploadStream uploadStream = null;
     try {
@@ -1080,12 +1093,16 @@ class NoSQLMongoDB3 implements INoSQLDB
       if(uploadStream != null) uploadStream.close();
     }
     String id = uploadStream.getObjectId().toHexString();
+    // gridFSFile.getExtraElements() is Deprecated...
+    if(mapAttributes != null && !mapAttributes.isEmpty()) {
+      update("fs.files", mapAttributes, id);
+    }
     if(debug) {
       if(content == null) {
-        System.out.println(logprefix + "writeFile(" + filename + ",null," + mapAttributes + "," + mapMetadata + ") -> " + id);
+        System.out.println(logprefix + "writeFile(" + filename + ",null," + mapMetadata + "," + mapAttributes + ") -> " + id);
       }
       else {
-        System.out.println(logprefix + "writeFile(" + filename + ",byte[" + content.length + "]," + mapAttributes + "," + mapMetadata + ") -> " + id);
+        System.out.println(logprefix + "writeFile(" + filename + ",byte[" + content.length + "]," + mapMetadata + "," + mapAttributes + ") -> " + id);
       }
     }
     return id;

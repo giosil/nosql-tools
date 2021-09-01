@@ -46,7 +46,7 @@ class NoSQLMock implements INoSQLDB
   
   protected static boolean firstload = false;
   protected static String  defaultDatabase = "default";
-  protected static Map<String,Map<String,List<Map<String, Object>>>> data = new HashMap<String, Map<String,List<Map<String, Object>>>>();
+  protected static Map<String, Map<String, List<Map<String, Object>>>> data = new HashMap<String, Map<String, List<Map<String, Object>>>>();
   static {
     if(!firstload) {
       firstload = true;
@@ -59,7 +59,7 @@ class NoSQLMock implements INoSQLDB
         if(sUrl != null && sUrl.length() > 0) {
           if(sUrl.startsWith("file:///")) {
             if(sUrl.indexOf(':', 8) >= 0) {
-              filePath = sUrl.substring(8);  
+              filePath = sUrl.substring(8);
             }
             else {
               filePath = sUrl.substring(7);
@@ -85,6 +85,12 @@ class NoSQLMock implements INoSQLDB
     }
   }
   
+  public NoSQLMock(boolean debug)
+  {
+    this();
+    this.debug = debug;
+  }
+  
   public NoSQLMock(String dbname)
   {
     if(dbname != null && dbname.length() > 0) {
@@ -96,6 +102,12 @@ class NoSQLMock implements INoSQLDB
     if(this.dbname == null || this.dbname.length() == 0) {
       this.dbname = defaultDatabase;
     }
+  }
+  
+  public NoSQLMock(String dbname, boolean debug)
+  {
+    this(dbname);
+    this.debug = debug;
   }
   
   @Override
@@ -1191,15 +1203,23 @@ class NoSQLMock implements INoSQLDB
   
   @Override
   public
-  String writeFile(String filename, byte[] content, Map<String, ?> mapAttributes, Map<String, ?> mapMetadata)
+  String writeFile(String filename, byte[] content, Map<String, ?> mapMetadata)
+    throws Exception
+  {
+    return writeFile(filename, content, mapMetadata, null);
+  }
+  
+  @Override
+  public
+  String writeFile(String filename, byte[] content, Map<String, ?> mapMetadata, Map<String, ?> mapAttributes)
     throws Exception
   {
     if(debug) {
       if(content == null) {
-        System.out.println(logprefix + "writeFile(" + filename + ",null," + mapAttributes + "," + mapMetadata + ")...");
+        System.out.println(logprefix + "writeFile(" + filename + ",null," + mapMetadata + "," + mapAttributes + ")...");
       }
       else {
-        System.out.println(logprefix + "writeFile(" + filename + ",byte[" + content.length + "]," + mapAttributes + "," + mapMetadata + ")...");
+        System.out.println(logprefix + "writeFile(" + filename + ",byte[" + content.length + "]," + mapMetadata + "," + mapAttributes + ")...");
       }
     }
     
@@ -1233,10 +1253,10 @@ class NoSQLMock implements INoSQLDB
     
     if(debug) {
       if(content == null) {
-        System.out.println(logprefix + "writeFile(" + filename + ",null," + mapAttributes + "," + mapMetadata + ") -> " + id);
+        System.out.println(logprefix + "writeFile(" + filename + ",null," + mapMetadata + "," + mapAttributes + ") -> " + id);
       }
       else {
-        System.out.println(logprefix + "writeFile(" + filename + ",byte[" + content.length + "]," + mapAttributes + "," + mapMetadata + ") -> " + id);
+        System.out.println(logprefix + "writeFile(" + filename + ",byte[" + content.length + "]," + mapMetadata + "," + mapAttributes + ") -> " + id);
       }
     }
     return id;

@@ -59,12 +59,26 @@ class NoSQLMongoDB2 implements INoSQLDB
     this.db = getMongoClient().getDB(dbname);
   }
   
+  public NoSQLMongoDB2(boolean debug)
+    throws Exception
+  {
+    this();
+    this.debug = debug;
+  }
+  
   @SuppressWarnings("deprecation")
   public NoSQLMongoDB2(String dbname)
     throws Exception
   {
     if(dbname == null || dbname.length() == 0) dbname = NoSQLDataSource.getDefaultDbName();
     this.db = getMongoClient().getDB(dbname);
+  }
+  
+  public NoSQLMongoDB2(String dbname, boolean debug)
+    throws Exception
+  {
+    this(dbname);
+    this.debug = debug;
   }
   
   @Override
@@ -963,15 +977,23 @@ class NoSQLMongoDB2 implements INoSQLDB
   
   @Override
   public
-  String writeFile(String filename, byte[] content, Map<String, ?> mapAttributes, Map<String, ?> mapMetadata)
+  String writeFile(String filename, byte[] content, Map<String, ?> mapMetadata)
+    throws Exception
+  {
+    return writeFile(filename, content, mapMetadata, null);
+  }
+  
+  @Override
+  public
+  String writeFile(String filename, byte[] content, Map<String, ?> mapMetadata, Map<String, ?> mapAttributes)
     throws Exception
   {
     if(debug) {
       if(content == null) {
-        System.out.println(logprefix + "writeFile(" + filename + ",null," + mapAttributes + "," + mapMetadata + ")...");
+        System.out.println(logprefix + "writeFile(" + filename + ",null," + mapMetadata + "," + mapAttributes + ")...");
       }
       else {
-        System.out.println(logprefix + "writeFile(" + filename + ",byte[" + content.length + "]," + mapAttributes + "," + mapMetadata + ")...");
+        System.out.println(logprefix + "writeFile(" + filename + ",byte[" + content.length + "]," + mapMetadata + "," + mapAttributes + ")...");
       }
     }
     
@@ -997,10 +1019,10 @@ class NoSQLMongoDB2 implements INoSQLDB
     String id = getId(gridFSInputFile);
     if(debug) {
       if(content == null) {
-        System.out.println(logprefix + "writeFile(" + filename + ",null," + mapAttributes + "," + mapMetadata + ") -> " + id);
+        System.out.println(logprefix + "writeFile(" + filename + ",null," + mapMetadata + "," + mapAttributes + ") -> " + id);
       }
       else {
-        System.out.println(logprefix + "writeFile(" + filename + ",byte[" + content.length + "]," + mapAttributes + "," + mapMetadata + ") -> " + id);
+        System.out.println(logprefix + "writeFile(" + filename + ",byte[" + content.length + "]," + mapMetadata + "," + mapAttributes + ") -> " + id);
       }
     }
     return id;

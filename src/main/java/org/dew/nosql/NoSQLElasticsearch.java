@@ -36,8 +36,9 @@ import org.dew.nosql.util.WMap;
 import org.dew.nosql.util.WUtil;
 
 /**
- * Implementazione di INoSQLDB per Elasticsearch.
- * Per l'implementazione di inc in config/elasticsearch.yml aggiungere:
+ * Implementation INoSQLDB for Elasticsearch.
+ * 
+ * In versions prior to 6, for the implementation of inc in config / elasticsearch.yml add:
  *
  * script.inline: true
  * script.stored: true

@@ -33,7 +33,7 @@ import org.dew.nosql.util.Base64Coder;
 import org.dew.nosql.util.WUtil;
 
 /**
- * Implementazione mock di INoSQLDB.
+ * Mock implementation of INoSQLDB.
  */
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public

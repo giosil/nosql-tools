@@ -963,8 +963,7 @@ class NoSQLMongoDB3 implements INoSQLDB
     if(_id instanceof ObjectId) {
       mapResult.put("_id",((ObjectId) _id).toHexString());
     }
-    else
-    if(_id != null) {
+    else if(_id != null) {
       mapResult.put("_id", _id.toString());
     }
     

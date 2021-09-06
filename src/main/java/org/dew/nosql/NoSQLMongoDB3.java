@@ -1,7 +1,6 @@
 package org.dew.nosql;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
@@ -18,16 +17,15 @@ import javax.naming.InitialContext;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 
-import org.dew.nosql.json.JSON;
-import org.dew.nosql.util.WUtil;
-
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 import com.mongodb.MongoClient;
+import com.mongodb.MongoClientOptions;
 import com.mongodb.MongoClientURI;
 import com.mongodb.MongoCredential;
 import com.mongodb.ServerAddress;
 import com.mongodb.bulk.BulkWriteResult;
+
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
@@ -43,6 +41,9 @@ import com.mongodb.client.model.InsertOneModel;
 import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
+
+import org.dew.nosql.json.JSON;
+import org.dew.nosql.util.WUtil;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
 public
@@ -994,7 +995,7 @@ class NoSQLMongoDB3 implements INoSQLDB
     
     if(debug) System.out.println(logprefix + "count " + collection + ".count(" + filter + ")");
     
-    int result = (int) mongoCollection.count(filter);
+    int result = (int) mongoCollection.countDocuments(filter);
     
     if(debug) System.out.println(logprefix + "count(" + collection + "," + mapFilter + ") -> " + result);
     return result;
@@ -1145,7 +1146,6 @@ class NoSQLMongoDB3 implements INoSQLDB
         mapRecord.put(FILE_NAME,        gridFSFile.getFilename());
         mapRecord.put(FILE_LENGTH,      gridFSFile.getLength());
         mapRecord.put(FILE_DATE_UPLOAD, gridFSFile.getUploadDate());
-        mapRecord.put(FILE_MD5,         gridFSFile.getMD5());
         
         listResult.add(mapRecord);
       }
@@ -1197,7 +1197,6 @@ class NoSQLMongoDB3 implements INoSQLDB
       mapResult.put(FILE_CONTENT,     content);
       mapResult.put(FILE_LENGTH,      gridFSFile.getLength());
       mapResult.put(FILE_DATE_UPLOAD, gridFSFile.getUploadDate());
-      mapResult.put(FILE_MD5,         gridFSFile.getMD5());
     }
     finally {
       if(downloadStream != null) try{ downloadStream.close(); } catch(Throwable th) {}
@@ -1634,7 +1633,7 @@ class NoSQLMongoDB3 implements INoSQLDB
         if(sDbAuth == null || sDbAuth.length() == 0) sDbAuth = "admin";
         char[] password = sPass != null ? sPass.toCharArray() : new char[0];
         MongoCredential mongoCredential = MongoCredential.createCredential(sUser, sDbAuth, password);
-        mongoClient = new MongoClient(new ServerAddress(sHost, iPort), Arrays.asList(mongoCredential));
+        mongoClient = new MongoClient(new ServerAddress(sHost, iPort), mongoCredential, MongoClientOptions.builder().build());
       }
       else {
         mongoClient = new MongoClient(new ServerAddress(sHost, iPort));

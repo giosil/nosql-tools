@@ -13,7 +13,6 @@ interface INoSQLDB
   public static final String FILE_NAME        = "filename";
   public static final String FILE_LENGTH      = "length";
   public static final String FILE_DATE_UPLOAD = "uploadDate";
-  public static final String FILE_MD5         = "md5";
   
   public void setDebug(boolean debug);
   

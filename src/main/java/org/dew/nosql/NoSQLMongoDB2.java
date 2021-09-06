@@ -2,6 +2,7 @@ package org.dew.nosql;
 
 import java.io.ByteArrayOutputStream;
 import java.lang.reflect.Array;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -18,8 +19,6 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 
 import org.bson.types.ObjectId;
-import org.dew.nosql.json.JSON;
-import org.dew.nosql.util.WUtil;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
@@ -39,7 +38,10 @@ import com.mongodb.gridfs.GridFS;
 import com.mongodb.gridfs.GridFSDBFile;
 import com.mongodb.gridfs.GridFSInputFile;
 
-@SuppressWarnings({"rawtypes", "unchecked"})
+import org.dew.nosql.json.JSON;
+import org.dew.nosql.util.WUtil;
+
+@SuppressWarnings({"deprecation", "rawtypes", "unchecked"})
 public
 class NoSQLMongoDB2 implements INoSQLDB
 {
@@ -51,7 +53,6 @@ class NoSQLMongoDB2 implements INoSQLDB
   protected boolean debug = false;
   protected int defLimit  = 10000;
   
-  @SuppressWarnings("deprecation")
   public NoSQLMongoDB2()
     throws Exception
   {
@@ -66,7 +67,6 @@ class NoSQLMongoDB2 implements INoSQLDB
     this.debug = debug;
   }
   
-  @SuppressWarnings("deprecation")
   public NoSQLMongoDB2(String dbname)
     throws Exception
   {
@@ -1062,7 +1062,6 @@ class NoSQLMongoDB2 implements INoSQLDB
       mapRecord.put(FILE_NAME,        gridFSDBFile.getFilename());
       mapRecord.put(FILE_LENGTH,      gridFSDBFile.getLength());
       mapRecord.put(FILE_DATE_UPLOAD, gridFSDBFile.getUploadDate());
-      mapRecord.put(FILE_MD5,         gridFSDBFile.getMD5());
       
       listResult.add(mapRecord);
     }
@@ -1095,7 +1094,6 @@ class NoSQLMongoDB2 implements INoSQLDB
     mapResult.put(FILE_CONTENT,     content);
     mapResult.put(FILE_LENGTH,      gridFSDBFile.getLength());
     mapResult.put(FILE_DATE_UPLOAD, gridFSDBFile.getUploadDate());
-    mapResult.put(FILE_MD5,         gridFSDBFile.getMD5());
     
     if(debug) System.out.println(logprefix + "readFile(" + filename + ") -> {" + mapResult.size() + "}");
     return mapResult;

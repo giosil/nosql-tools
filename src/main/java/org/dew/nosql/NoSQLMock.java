@@ -13,8 +13,6 @@ import java.net.URL;
 
 import java.nio.ByteBuffer;
 
-import java.security.MessageDigest;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -28,7 +26,6 @@ import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.dew.nosql.json.JSON;
-import org.dew.nosql.util.Base64Coder;
 
 import org.dew.nosql.util.WUtil;
 
@@ -1247,7 +1244,6 @@ class NoSQLMock implements INoSQLDB
     mapFile.put(FILE_NAME,        filename);
     mapFile.put(FILE_LENGTH,      content != null ? content.length : 0);
     mapFile.put(FILE_DATE_UPLOAD, new Date());
-    mapFile.put(FILE_MD5,         getDigestMD5(content));
     
     listColData.add(mapFile);
     
@@ -1331,7 +1327,6 @@ class NoSQLMock implements INoSQLDB
     mapResult.put(FILE_NAME,    filename);
     mapResult.put(FILE_CONTENT, content);
     mapResult.put(FILE_LENGTH,  content.length);
-    mapResult.put(FILE_MD5,     getDigestMD5(content));
     
     if(debug) System.out.println(logprefix + "readFile(" + filename + ") -> {" + mapResult.size() + "}");
     return mapResult;
@@ -1723,21 +1718,6 @@ class NoSQLMock implements INoSQLDB
       return entry.getValue();
     }
     return null;
-  }
-  
-  protected static
-  String getDigestMD5(byte[] content)
-      throws Exception
-  {
-    if(content == null) return "";
-    try {
-      MessageDigest md = MessageDigest.getInstance("MD5");
-      md.update(content);
-      return String.valueOf(Base64Coder.encode(md.digest()));
-    }
-    catch(Exception ex) {
-    }
-    return "-";
   }
   
   protected static

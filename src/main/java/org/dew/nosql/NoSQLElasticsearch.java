@@ -14,8 +14,6 @@ import java.net.URLEncoder;
 
 import java.nio.ByteBuffer;
 
-import java.security.MessageDigest;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -31,7 +29,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.dew.nosql.json.JSON;
 
 import org.dew.nosql.util.Base64Coder;
-
 import org.dew.nosql.util.WMap;
 import org.dew.nosql.util.WUtil;
 
@@ -1310,7 +1307,6 @@ class NoSQLElasticsearch implements INoSQLDB
     mapDocument.put(FILE_CONTENT,      content);
     mapDocument.put(FILE_LENGTH,       length);
     mapDocument.put(FILE_DATE_UPLOAD,  new java.util.Date());
-    mapDocument.put(FILE_MD5,          getDigestMD5(content));
     
     String id = insert("files", mapDocument, false);
     if(debug) {
@@ -1339,7 +1335,7 @@ class NoSQLElasticsearch implements INoSQLDB
       mapQuery.put(FILE_NAME, filename.replace('*', '%'));
     }
     
-    List<Map<String, Object>> listResult = find("files", mapQuery, FILE_NAME + "," + FILE_LENGTH + "," + FILE_DATE_UPLOAD + "," + FILE_MD5);
+    List<Map<String, Object>> listResult = find("files", mapQuery, FILE_NAME + "," + FILE_LENGTH + "," + FILE_DATE_UPLOAD);
     if(listResult == null) {
       if(debug) System.out.println(logprefix + "findFiles(" + filename + "," + mapFilter + ") -> null");
       return null;
@@ -1912,21 +1908,6 @@ class NoSQLElasticsearch implements INoSQLDB
       return entry.getValue();
     }
     return null;
-  }
-  
-  protected static
-  String getDigestMD5(byte[] content)
-    throws Exception
-  {
-    if(content == null) return "";
-    try {
-      MessageDigest md = MessageDigest.getInstance("MD5");
-      md.update(content);
-      return String.valueOf(Base64Coder.encode(md.digest()));
-    }
-    catch(Exception ex) {
-    }
-    return "-";
   }
   
   private static AtomicInteger _nextInc = new AtomicInteger((new java.util.Random()).nextInt());

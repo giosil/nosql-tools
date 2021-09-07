@@ -749,14 +749,14 @@ class NoSQLMock implements INoSQLDB
       }
     }
     
-    int iResult = 0;
+    int result = 0;
     if(iIndexOf >= 0) {
       listColData.remove(iIndexOf);
-      iResult = 1;
+      result = 1;
     }
     
-    if(debug) System.out.println(logprefix + "delete(" + collection + "," + id + ") -> " + iResult);
-    return iResult;
+    if(debug) System.out.println(logprefix + "delete(" + collection + "," + id + ") -> " + result);
+    return result;
   }
   
   @Override
@@ -771,7 +771,7 @@ class NoSQLMock implements INoSQLDB
       return -1;
     }
     
-    int iResult = 0;
+    int result = 0;
     
     List<Map<String, Object>> listColData = getCollectionData(dbname, collection, false);
     
@@ -781,13 +781,13 @@ class NoSQLMock implements INoSQLDB
       if(mapItem == null) continue;
       if(match(mapItem, mapFilter)) {
         iterator.remove();
-        iResult++;
+        result++;
         break;
       }
     }
     
-    if(debug) System.out.println(logprefix + "delete(" + collection + "," + mapFilter + ") -> " + iResult);
-    return iResult;
+    if(debug) System.out.println(logprefix + "delete(" + collection + "," + mapFilter + ") -> " + result);
+    return result;
   }
   
   @Override

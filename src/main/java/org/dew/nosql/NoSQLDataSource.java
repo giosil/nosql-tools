@@ -207,10 +207,13 @@ class NoSQLDataSource
     
     INoSQLDB noSQLDB = null;
     
-    if (type.startsWith("ela")) {
+    if(type.startsWith("blank")) {
+      noSQLDB = new NoSQLBlank();
+    }
+    else if(type.startsWith("ela")) {
       noSQLDB = new NoSQLElasticsearch(dbName);
     } 
-    else if (type.startsWith("mon")) {
+    else if(type.startsWith("mon")) {
       noSQLDB = new NoSQLMongoDB3(dbName);
     } 
     else {

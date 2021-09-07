@@ -199,7 +199,6 @@ class NoSQLBlank implements INoSQLDB
   @Override
   public int delete(String collection, String id) throws Exception {
     if(debug) System.out.println(logprefix + "delete(" + collection + "," + id + ")...");
-    
     if(collection == null || id == null) {
       if(debug) System.out.println(logprefix + "delete(" + collection + "," + id + ") -> -1");
       return -1;
@@ -212,7 +211,6 @@ class NoSQLBlank implements INoSQLDB
   @Override
   public int delete(String collection, Map<String, ?> mapFilter) throws Exception {
     if(debug) System.out.println(logprefix + "delete(" + collection + "," + mapFilter + ")...");
-    
     if(collection == null || mapFilter == null) {
       if(debug) System.out.println(logprefix + "delete(" + collection + "," + mapFilter + ") -> -1");
       return -1;
@@ -280,9 +278,7 @@ class NoSQLBlank implements INoSQLDB
 
   @Override
   public
-  boolean createIndex(String collection, String field, int type)
-      throws Exception
-  {
+  boolean createIndex(String collection, String field, int type) throws Exception {
     if(debug) System.out.println(logprefix + "createIndex(" + collection + "," + field + "," + type + ")...");
     boolean result = true;
     if(debug) System.out.println(logprefix + "createIndex(" + collection + "," + field + "," + type + ") -> " + result);
@@ -290,10 +286,7 @@ class NoSQLBlank implements INoSQLDB
   }
   
   @Override
-  public 
-  List<Map<String, Object>> listIndexes(String collection) 
-      throws Exception
-  {
+  public List<Map<String, Object>> listIndexes(String collection) throws Exception {
     if(debug) System.out.println(logprefix + "listIndexes(" + collection + ")...");
     List<Map<String, Object>> listResult = new ArrayList<Map<String, Object>>();
     if(debug) System.out.println(logprefix + "listIndexes(" + collection + ") -> " + listResult);
@@ -301,18 +294,12 @@ class NoSQLBlank implements INoSQLDB
   }
 
   @Override
-  public
-  String writeFile(String filename, byte[] content, Map<String, ?> mapMetadata)
-    throws Exception
-  {
+  public String writeFile(String filename, byte[] content, Map<String, ?> mapMetadata) throws Exception {
     return writeFile(filename, content, mapMetadata, null);
   }
   
   @Override
-  public
-  String writeFile(String filename, byte[] content, Map<String, ?> mapMetadata, Map<String, ?> mapAttributes)
-    throws Exception
-  {
+  public String writeFile(String filename, byte[] content, Map<String, ?> mapMetadata, Map<String, ?> mapAttributes) throws Exception {
     if(debug) {
       if(content == null) {
         System.out.println(logprefix + "writeFile(" + filename + ",null," + mapMetadata + "," + mapAttributes + ")...");

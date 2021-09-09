@@ -5,7 +5,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
-
+import java.io.PrintStream;
 import java.lang.reflect.Array;
 
 import java.net.NetworkInterface;
@@ -39,7 +39,8 @@ class NoSQLMock implements INoSQLDB
   protected static String logprefix = NoSQLMock.class.getSimpleName() + ".";
   
   protected String  dbname;
-  protected boolean debug  = false;
+  protected boolean debug   = false;
+  protected PrintStream log = System.out;
   
   protected static boolean firstload = false;
   protected static String  defaultDatabase = "default";
@@ -119,6 +120,13 @@ class NoSQLMock implements INoSQLDB
   boolean isDebug()
   {
     return debug;
+  }
+  
+  @Override
+  public 
+  void setLog(PrintStream log) 
+  {
+    this.log = log != null ? log : System.out; 
   }
   
   @Override

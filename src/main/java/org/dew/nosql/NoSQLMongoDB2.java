@@ -1,6 +1,7 @@
 package org.dew.nosql;
 
 import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.lang.reflect.Array;
 
 import java.util.ArrayList;
@@ -50,8 +51,9 @@ class NoSQLMongoDB2 implements INoSQLDB
   protected static Set<String> indexesCreated;
   
   protected DB db;
-  protected boolean debug = false;
-  protected int defLimit  = 10000;
+  protected boolean debug   = false;
+  protected PrintStream log = System.out;
+  protected int defLimit    = 10000;
   
   public NoSQLMongoDB2()
     throws Exception
@@ -97,14 +99,21 @@ class NoSQLMongoDB2 implements INoSQLDB
   
   @Override
   public 
+  void setLog(PrintStream log) 
+  {
+    this.log = log != null ? log : System.out; 
+  }
+  
+  @Override
+  public 
   Map<String, Object> load(Map<String, Object> mapOptions)
     throws Exception
   {
-    if(debug) System.out.println(logprefix + "load(" + mapOptions + ")...");
+    if(debug) log.println(logprefix + "load(" + mapOptions + ")...");
     
     Map<String, Object> mapResult = getInfo();
     
-    if(debug) System.out.println(logprefix + "load(" + mapOptions + ") -> " + mapResult);
+    if(debug) log.println(logprefix + "load(" + mapOptions + ") -> " + mapResult);
     return mapResult;
   }
   
@@ -113,11 +122,11 @@ class NoSQLMongoDB2 implements INoSQLDB
   boolean save(Map<String, Object> mapOptions)
     throws Exception
   {
-    if(debug) System.out.println(logprefix + "save(" + mapOptions + ")...");
+    if(debug) log.println(logprefix + "save(" + mapOptions + ")...");
     
     boolean result = false;
     
-    if(debug) System.out.println(logprefix + "save(" + mapOptions + ") -> " + result);
+    if(debug) log.println(logprefix + "save(" + mapOptions + ") -> " + result);
     return result;
   }
   
@@ -126,7 +135,7 @@ class NoSQLMongoDB2 implements INoSQLDB
   Map<String, Object> getInfo()
     throws Exception
   {
-    if(debug) System.out.println(logprefix + "getInfo()...");
+    if(debug) log.println(logprefix + "getInfo()...");
     
     Map<String, Object> mapResult = new HashMap<String, Object> (2);
     
@@ -136,7 +145,7 @@ class NoSQLMongoDB2 implements INoSQLDB
       mapResult.put("version", commandResult.get("version"));
     }
     
-    if(debug) System.out.println(logprefix + "getInfo() -> " + mapResult);
+    if(debug) log.println(logprefix + "getInfo() -> " + mapResult);
     return mapResult;
   }
   
@@ -145,7 +154,7 @@ class NoSQLMongoDB2 implements INoSQLDB
   List<String> getCollections()
     throws Exception
   {
-    if(debug) System.out.println(logprefix + "getCollections()...");
+    if(debug) log.println(logprefix + "getCollections()...");
     
     Set<String> collectionNames = db.getCollectionNames();
     
@@ -161,7 +170,7 @@ class NoSQLMongoDB2 implements INoSQLDB
     
     Collections.sort(result);
     
-    if(debug) System.out.println(logprefix + "getCollections() -> " + result);
+    if(debug) log.println(logprefix + "getCollections() -> " + result);
     return result;
   }
   
@@ -170,7 +179,7 @@ class NoSQLMongoDB2 implements INoSQLDB
   boolean drop(String collection) 
     throws Exception
   {
-    if(debug) System.out.println(logprefix + "drop(" + collection + ")...");
+    if(debug) log.println(logprefix + "drop(" + collection + ")...");
     boolean result = false;
     
     DBCollection dbCollection = db.getCollection(collection);
@@ -179,7 +188,7 @@ class NoSQLMongoDB2 implements INoSQLDB
     
     result = true;
     
-    if(debug) System.out.println(logprefix + "drop(" + collection + ") -> " + result);
+    if(debug) log.println(logprefix + "drop(" + collection + ") -> " + result);
     return result;
   }
   
@@ -188,18 +197,18 @@ class NoSQLMongoDB2 implements INoSQLDB
   String insert(String collection, Map<String, ?> mapData)
     throws Exception
   {
-    if(debug) System.out.println(logprefix + "insert(" + collection + "," + mapData + ")...");
+    if(debug) log.println(logprefix + "insert(" + collection + "," + mapData + ")...");
     
     DBCollection dbCollection = db.getCollection(collection);
     
     DBObject dbObject = toDBObject(mapData);
     
-    if(debug) System.out.println(logprefix + "insert " + collection + ".insert(" + dbObject + ")...");
+    if(debug) log.println(logprefix + "insert " + collection + ".insert(" + dbObject + ")...");
     
     dbCollection.insert(dbObject);
     
     String result = getId(dbObject);
-    if(debug) System.out.println(logprefix + "insert(" + collection + "," + mapData + ") -> " + result);
+    if(debug) log.println(logprefix + "insert(" + collection + "," + mapData + ") -> " + result);
     return result;
   }
   
@@ -208,18 +217,18 @@ class NoSQLMongoDB2 implements INoSQLDB
   String insert(String collection, Map<String, ?> mapData, boolean refresh)
     throws Exception
   {
-    if(debug) System.out.println(logprefix + "insert(" + collection + "," + mapData + "," + refresh + ")...");
+    if(debug) log.println(logprefix + "insert(" + collection + "," + mapData + "," + refresh + ")...");
     
     DBCollection dbCollection = db.getCollection(collection);
     
     DBObject dbObject = toDBObject(mapData);
     
-    if(debug) System.out.println(logprefix + "insert " + collection + ".insert(" + dbObject + ")...");
+    if(debug) log.println(logprefix + "insert " + collection + ".insert(" + dbObject + ")...");
     
     dbCollection.insert(dbObject);
     
     String result = getId(dbObject);
-    if(debug) System.out.println(logprefix + "insert(" + collection + "," + mapData + "," + refresh + ") -> " + result);
+    if(debug) log.println(logprefix + "insert(" + collection + "," + mapData + "," + refresh + ") -> " + result);
     return result;
   }
   
@@ -230,36 +239,36 @@ class NoSQLMongoDB2 implements INoSQLDB
   {
     if(debug) {
       if(listData != null) {
-        System.out.println(logprefix + "bulkIns(" + collection + ", " + listData.size() + " documents)...");
+        log.println(logprefix + "bulkIns(" + collection + ", " + listData.size() + " documents)...");
       }
       else {
-        System.out.println(logprefix + "bulkIns(" + collection + ", null)...");
+        log.println(logprefix + "bulkIns(" + collection + ", null)...");
       }
     }
     if(listData == null || listData.size() == 0) {
       if(listData != null) {
-        System.out.println(logprefix + "bulkIns(" + collection + ", " + listData.size() + " documents) -> 0");
+        log.println(logprefix + "bulkIns(" + collection + ", " + listData.size() + " documents) -> 0");
       }
       else {
-        System.out.println(logprefix + "bulkIns(" + collection + ", null) -> 0");
+        log.println(logprefix + "bulkIns(" + collection + ", null) -> 0");
       }
       return 0;
     }
     
     DBCollection dbCollection = db.getCollection(collection);
     
-    if(debug) System.out.println(logprefix + "bulkIns " + collection + ".initializeOrderedBulkOperation()...");
+    if(debug) log.println(logprefix + "bulkIns " + collection + ".initializeOrderedBulkOperation()...");
     BulkWriteOperation bulkWriteOperation = dbCollection.initializeOrderedBulkOperation();
     for(int i = 0; i < listData.size(); i++) {
       DBObject dbObject = toDBObject(listData.get(i));
-      if(debug) System.out.println(logprefix + "bulkIns bulkWriteOperation.insert(" + dbObject + ")...");
+      if(debug) log.println(logprefix + "bulkIns bulkWriteOperation.insert(" + dbObject + ")...");
       bulkWriteOperation.insert(toDBObject(listData.get(i)));
     }
     
-    if(debug) System.out.println(logprefix + "bulkIns bulkWriteOperation.execute()...");
+    if(debug) log.println(logprefix + "bulkIns bulkWriteOperation.execute()...");
     BulkWriteResult bulkWriteResult = bulkWriteOperation.execute();
     int result = bulkWriteResult.getInsertedCount();
-    System.out.println(logprefix + "bulkIns(" + collection + ", " + listData.size() + " documents) -> " + result);
+    log.println(logprefix + "bulkIns(" + collection + ", " + listData.size() + " documents) -> " + result);
     return result;
   }
   
@@ -268,7 +277,7 @@ class NoSQLMongoDB2 implements INoSQLDB
   boolean replace(String collection, Map<String, ?> mapData, String id)
     throws Exception
   {
-    if(debug) System.out.println(logprefix + "replace(" + collection + "," + mapData + "," + id + ")...");
+    if(debug) log.println(logprefix + "replace(" + collection + "," + mapData + "," + id + ")...");
     
     DBCollection dbCollection = db.getCollection(collection);
     
@@ -276,12 +285,12 @@ class NoSQLMongoDB2 implements INoSQLDB
     
     BasicDBObject query = buildQueryFilter(id);
     
-    if(debug) System.out.println(logprefix + "replace " + collection + ".update(" + query + "," + dbObject +")...");
+    if(debug) log.println(logprefix + "replace " + collection + ".update(" + query + "," + dbObject +")...");
     
     WriteResult wr = dbCollection.update(query, dbObject);
     
     boolean result = wr.getN() > 0;
-    if(debug) System.out.println(logprefix + "replace(" + collection + "," + mapData + "," + id + ") -> " + result);
+    if(debug) log.println(logprefix + "replace(" + collection + "," + mapData + "," + id + ") -> " + result);
     return result;
   }
   
@@ -290,10 +299,10 @@ class NoSQLMongoDB2 implements INoSQLDB
   int update(String collection, Map<String, ?> mapData, String id)
     throws Exception
   {
-    if(debug) System.out.println(logprefix + "update(" + collection + "," + mapData + "," + id + ")...");
+    if(debug) log.println(logprefix + "update(" + collection + "," + mapData + "," + id + ")...");
     
     if(mapData == null || mapData.isEmpty()) {
-      if(debug) System.out.println(logprefix + "update(" + collection + "," + mapData + "," + id + ") -> 0");
+      if(debug) log.println(logprefix + "update(" + collection + "," + mapData + "," + id + ") -> 0");
       return 0;
     }
     
@@ -305,12 +314,12 @@ class NoSQLMongoDB2 implements INoSQLDB
     
     BasicDBObject dbset = new BasicDBObject("$set", dbObject);
     
-    if(debug) System.out.println(logprefix + "update " + collection + ".update(" + query + "," + dbset +")...");
+    if(debug) log.println(logprefix + "update " + collection + ".update(" + query + "," + dbset +")...");
     
     WriteResult wr = dbCollection.update(query, dbset);
     
     int result = wr.getN();
-    if(debug) System.out.println(logprefix + "update(" + collection + "," + mapData + "," + id + ") -> " + result);
+    if(debug) log.println(logprefix + "update(" + collection + "," + mapData + "," + id + ") -> " + result);
     return result;
   }
   
@@ -319,10 +328,10 @@ class NoSQLMongoDB2 implements INoSQLDB
   int update(String collection, Map<String, ?> mapData, Map<String, ?> mapFilter)
     throws Exception
   {
-    if(debug) System.out.println(logprefix + "update(" + collection + "," + mapData + "," + mapFilter + ")...");
+    if(debug) log.println(logprefix + "update(" + collection + "," + mapData + "," + mapFilter + ")...");
     
     if(mapData == null || mapData.isEmpty()) {
-      if(debug) System.out.println(logprefix + "update(" + collection + "," + mapData + "," + mapFilter + ") -> 0");
+      if(debug) log.println(logprefix + "update(" + collection + "," + mapData + "," + mapFilter + ") -> 0");
       return 0;
     }
     
@@ -334,12 +343,12 @@ class NoSQLMongoDB2 implements INoSQLDB
     
     BasicDBObject dbset = new BasicDBObject("$set", dbObject);
     
-    if(debug) System.out.println(logprefix + "update " + collection + ".update(" + query + "," + dbset + ",false,true)...");
+    if(debug) log.println(logprefix + "update " + collection + ".update(" + query + "," + dbset + ",false,true)...");
     
     WriteResult wr = dbCollection.update(query, dbset, false, true);
     
     int result = wr.getN();
-    if(debug) System.out.println(logprefix + "update(" + collection + "," + mapData + "," + mapFilter + ") -> " + result);
+    if(debug) log.println(logprefix + "update(" + collection + "," + mapData + "," + mapFilter + ") -> " + result);
     return result;
   }
   
@@ -348,7 +357,7 @@ class NoSQLMongoDB2 implements INoSQLDB
   String upsert(String collection, Map<String, ?> mapData, Map<String, ?> mapFilter)
     throws Exception
   {
-    if(debug) System.out.println(logprefix + "upsert(" + collection + "," + mapData + "," + mapFilter + ")...");
+    if(debug) log.println(logprefix + "upsert(" + collection + "," + mapData + "," + mapFilter + ")...");
     
     DBCollection dbCollection = db.getCollection(collection);
     
@@ -358,7 +367,7 @@ class NoSQLMongoDB2 implements INoSQLDB
     
     BasicDBObject dbset = new BasicDBObject("$set", dbObject);
     
-    if(debug) System.out.println(logprefix + "update " + collection + ".update(" + query + "," + dbset + ", true, false)...");
+    if(debug) log.println(logprefix + "update " + collection + ".update(" + query + "," + dbset + ", true, false)...");
     
     WriteResult wr = dbCollection.update(query, dbset, true, false);
     
@@ -367,7 +376,7 @@ class NoSQLMongoDB2 implements INoSQLDB
     if(upsertedId instanceof ObjectId) {
       id = ((ObjectId) upsertedId).toHexString();
     }
-    if(debug) System.out.println(logprefix + "upsert(" + collection + "," + mapData + "," + mapFilter + ") -> " + id);
+    if(debug) log.println(logprefix + "upsert(" + collection + "," + mapData + "," + mapFilter + ") -> " + id);
     return id;
   }
   
@@ -376,7 +385,7 @@ class NoSQLMongoDB2 implements INoSQLDB
   int unset(String collection, String fields, String id)
     throws Exception
   {
-    if(debug) System.out.println(logprefix + "unset(" + collection + "," + fields + "," + id + ")...");
+    if(debug) log.println(logprefix + "unset(" + collection + "," + fields + "," + id + ")...");
     
     if(fields == null || fields.length() == 0) return 0;
     
@@ -396,12 +405,12 @@ class NoSQLMongoDB2 implements INoSQLDB
     
     BasicDBObject dbunset = new BasicDBObject("$unset", dbObject);
     
-    if(debug) System.out.println(logprefix + "unset " + collection + ".update(" + query + "," + dbunset +")...");
+    if(debug) log.println(logprefix + "unset " + collection + ".update(" + query + "," + dbunset +")...");
     
     WriteResult wr = dbCollection.update(query, dbunset);
     
     int result = wr.getN();
-    if(debug) System.out.println(logprefix + "unset(" + collection + "," + fields + "," + id + ") -> " + result);
+    if(debug) log.println(logprefix + "unset(" + collection + "," + fields + "," + id + ") -> " + result);
     return result;
   }
   
@@ -410,7 +419,7 @@ class NoSQLMongoDB2 implements INoSQLDB
   int inc(String collection, String id, String field, Number value)
     throws Exception
   {
-    if(debug) System.out.println(logprefix + "inc(" + collection + "," + id + "," + field + "," + value + ")...");
+    if(debug) log.println(logprefix + "inc(" + collection + "," + id + "," + field + "," + value + ")...");
     
     DBCollection dbCollection = db.getCollection(collection);
     
@@ -418,12 +427,12 @@ class NoSQLMongoDB2 implements INoSQLDB
     
     BasicDBObject dbinc = new BasicDBObject("$inc", new BasicDBObject().append(field, value));
     
-    if(debug) System.out.println(logprefix + "inc " + collection + ".update(" + query + "," + dbinc + ")...");
+    if(debug) log.println(logprefix + "inc " + collection + ".update(" + query + "," + dbinc + ")...");
     
     WriteResult wr = dbCollection.update(query, dbinc);
     
     int result = wr.getN();
-    if(debug) System.out.println(logprefix + "inc(" + collection + "," + id + "," + field + "," + value + ") -> " + result);
+    if(debug) log.println(logprefix + "inc(" + collection + "," + id + "," + field + "," + value + ") -> " + result);
     return result;
   }
   
@@ -432,7 +441,7 @@ class NoSQLMongoDB2 implements INoSQLDB
   int inc(String collection, String id, String field1, Number value1, String field2, Number value2)
     throws Exception
   {
-    if(debug) System.out.println(logprefix + "inc(" + collection + "," + id + "," + field1 + "," + value1 + "," + field2 + "," + value2 + ")...");
+    if(debug) log.println(logprefix + "inc(" + collection + "," + id + "," + field1 + "," + value1 + "," + field2 + "," + value2 + ")...");
     
     DBCollection dbCollection = db.getCollection(collection);
     
@@ -440,12 +449,12 @@ class NoSQLMongoDB2 implements INoSQLDB
     
     BasicDBObject dbinc = new BasicDBObject("$inc", new BasicDBObject().append(field1, value1).append(field2, value2));
     
-    if(debug) System.out.println(logprefix + "inc " + collection + ".update(" + query + "," + dbinc + ")...");
+    if(debug) log.println(logprefix + "inc " + collection + ".update(" + query + "," + dbinc + ")...");
     
     WriteResult wr = dbCollection.update(query, dbinc);
     
     int result = wr.getN();
-    if(debug) System.out.println(logprefix + "inc(" + collection + "," + id + "," + field1 + "," + value1 + "," + field2 + "," + value2 + ") -> " + result);
+    if(debug) log.println(logprefix + "inc(" + collection + "," + id + "," + field1 + "," + value1 + "," + field2 + "," + value2 + ") -> " + result);
     return result;
   }
   
@@ -454,7 +463,7 @@ class NoSQLMongoDB2 implements INoSQLDB
   int inc(String collection, Map<String, ?> mapFilter, String field, Number value)
     throws Exception
   {
-    if(debug) System.out.println(logprefix + "inc(" + collection + "," + mapFilter + "," + field + "," + value + ")...");
+    if(debug) log.println(logprefix + "inc(" + collection + "," + mapFilter + "," + field + "," + value + ")...");
     
     DBCollection dbCollection = db.getCollection(collection);
     
@@ -462,12 +471,12 @@ class NoSQLMongoDB2 implements INoSQLDB
     
     BasicDBObject dbinc = new BasicDBObject("$inc", new BasicDBObject().append(field, value));
     
-    if(debug) System.out.println(logprefix + "inc " + collection + ".update(" + query + "," + dbinc + ",false,true)...");
+    if(debug) log.println(logprefix + "inc " + collection + ".update(" + query + "," + dbinc + ",false,true)...");
     
     WriteResult wr = dbCollection.update(query, dbinc, false, true);
     
     int result = wr.getN();
-    if(debug) System.out.println(logprefix + "inc(" + collection + "," + mapFilter + "," + field + "," + value + ") -> " + result);
+    if(debug) log.println(logprefix + "inc(" + collection + "," + mapFilter + "," + field + "," + value + ") -> " + result);
     return result;
   }
   
@@ -476,7 +485,7 @@ class NoSQLMongoDB2 implements INoSQLDB
   int inc(String collection, Map<String, ?> mapFilter, String field1, Number value1, String field2, Number value2)
     throws Exception
   {
-    if(debug) System.out.println(logprefix + "inc(" + collection + "," + mapFilter + "," + field1 + "," + value1 + "," + field2 + "," + value2 + ")...");
+    if(debug) log.println(logprefix + "inc(" + collection + "," + mapFilter + "," + field1 + "," + value1 + "," + field2 + "," + value2 + ")...");
     
     DBCollection dbCollection = db.getCollection(collection);
     
@@ -484,12 +493,12 @@ class NoSQLMongoDB2 implements INoSQLDB
     
     BasicDBObject dbinc = new BasicDBObject("$inc", new BasicDBObject().append(field1, value1).append(field2, value2));
     
-    if(debug) System.out.println(logprefix + "inc " + collection + ".update(" + query + "," + dbinc + ",false,true)...");
+    if(debug) log.println(logprefix + "inc " + collection + ".update(" + query + "," + dbinc + ",false,true)...");
     
     WriteResult wr = dbCollection.update(query, dbinc, false, true);
     
     int result = wr.getN();
-    if(debug) System.out.println(logprefix + "inc(" + collection + "," + mapFilter + "," + field1 + "," + value1 + "," + field2 + "," + value2 + ") -> " + result);
+    if(debug) log.println(logprefix + "inc(" + collection + "," + mapFilter + "," + field1 + "," + value1 + "," + field2 + "," + value2 + ") -> " + result);
     return result;
   }
   
@@ -498,29 +507,29 @@ class NoSQLMongoDB2 implements INoSQLDB
   int delete(String collection, String id)
     throws Exception
   {
-    if(debug) System.out.println(logprefix + "delete(" + collection + "," + id + ")...");
+    if(debug) log.println(logprefix + "delete(" + collection + "," + id + ")...");
     
     if(collection == null || id == null) {
-      if(debug) System.out.println(logprefix + "delete(" + collection + "," + id + ") -> 0");
+      if(debug) log.println(logprefix + "delete(" + collection + "," + id + ") -> 0");
       return 0;
     }
     
     DBCollection dbCollection = db.getCollection(collection);
     
     if(id.equals("!")) {
-      if(debug) System.out.println(logprefix + "delete " + collection + ".drop()");
+      if(debug) log.println(logprefix + "delete " + collection + ".drop()");
       dbCollection.drop();
       return 1;
     }
     
     BasicDBObject query = buildQueryFilter(id);
     
-    if(debug) System.out.println(logprefix + "delete " + collection + ".remove(" + query + ")");
+    if(debug) log.println(logprefix + "delete " + collection + ".remove(" + query + ")");
     
     WriteResult wr = dbCollection.remove(query);
     
     int result = wr.getN();
-    if(debug) System.out.println(logprefix + "delete(" + collection + "," + id + ") -> " + result);
+    if(debug) log.println(logprefix + "delete(" + collection + "," + id + ") -> " + result);
     return result;
   }
   
@@ -529,18 +538,18 @@ class NoSQLMongoDB2 implements INoSQLDB
   int delete(String collection, Map<String, ?> mapFilter)
     throws Exception
   {
-    if(debug) System.out.println(logprefix + "delete(" + collection + "," + mapFilter + ")...");
+    if(debug) log.println(logprefix + "delete(" + collection + "," + mapFilter + ")...");
     
     DBCollection dbCollection = db.getCollection(collection);
     
     BasicDBObject query = buildQueryFilter(mapFilter);
     
-    if(debug) System.out.println(logprefix + "delete " + collection + ".remove(" + query + ")");
+    if(debug) log.println(logprefix + "delete " + collection + ".remove(" + query + ")");
     
     WriteResult wr = dbCollection.remove(query);
     
     int result = wr.getN();
-    if(debug) System.out.println(logprefix + "delete(" + collection + "," + mapFilter + ") -> " + result);
+    if(debug) log.println(logprefix + "delete(" + collection + "," + mapFilter + ") -> " + result);
     return result;
   }
   
@@ -549,7 +558,7 @@ class NoSQLMongoDB2 implements INoSQLDB
   List<Map<String, Object>> find(String collection, Map<String, ?> mapFilter, String fields)
     throws Exception
   {
-    if(debug) System.out.println(logprefix + "find(" + collection + "," + mapFilter + ",\"" + fields + "\")...");
+    if(debug) log.println(logprefix + "find(" + collection + "," + mapFilter + ",\"" + fields + "\")...");
     
     DBObject keys   = null;
     String[] toexcl = null;
@@ -577,7 +586,7 @@ class NoSQLMongoDB2 implements INoSQLDB
       
       BasicDBObject query = buildQueryFilter(mapFilter);
       
-      if(debug) System.out.println(logprefix + "find " + collection + ".find(" + query + "," + keys + ").limit(" + defLimit + ")");
+      if(debug) log.println(logprefix + "find " + collection + ".find(" + query + "," + keys + ").limit(" + defLimit + ")");
       
       dbCursor = dbCollection.find(query, keys).limit(defLimit);
       while(dbCursor.hasNext()) {
@@ -602,7 +611,7 @@ class NoSQLMongoDB2 implements INoSQLDB
     finally {
       if(dbCursor != null) try{ dbCursor.close(); } catch(Exception ex) {}
     }
-    if(debug) System.out.println(logprefix + "find(" + collection + "," + mapFilter + ") -> " + listResult.size() + " documents");
+    if(debug) log.println(logprefix + "find(" + collection + "," + mapFilter + ") -> " + listResult.size() + " documents");
     return listResult;
   }
   
@@ -611,7 +620,7 @@ class NoSQLMongoDB2 implements INoSQLDB
   List<Map<String, Object>> find(String collection, Map<String, ?> mapFilter, String fields, String orderBy, int limit)
     throws Exception
   {
-    if(debug) System.out.println(logprefix + "find(" + collection + "," + mapFilter + ",\"" + fields + "\",\"" + orderBy + "\"," + limit + ")...");
+    if(debug) log.println(logprefix + "find(" + collection + "," + mapFilter + ",\"" + fields + "\",\"" + orderBy + "\"," + limit + ")...");
     
     DBObject keys   = null;
     String[] toexcl = null;
@@ -653,11 +662,11 @@ class NoSQLMongoDB2 implements INoSQLDB
         }
         String sOrderClause = orderBy.substring(iBegin).trim();
         dbsort.append(getOrderField(sOrderClause), getOrderType(sOrderClause));
-        if(debug) System.out.println(logprefix + "find " + collection + ".find(" + query + ").sort(" + dbsort + ").limit(" + limit + ")");
+        if(debug) log.println(logprefix + "find " + collection + ".find(" + query + ").sort(" + dbsort + ").limit(" + limit + ")");
         dbCursor = dbCollection.find(query, keys).sort(dbsort).limit(limit);
       }
       else {
-        if(debug) System.out.println(logprefix + "find " + collection + ".find(" + query + ").limit(" + limit + ")");
+        if(debug) log.println(logprefix + "find " + collection + ".find(" + query + ").limit(" + limit + ")");
         dbCursor = dbCollection.find(query, keys).limit(limit);
       }
       while(dbCursor.hasNext()) {
@@ -682,7 +691,7 @@ class NoSQLMongoDB2 implements INoSQLDB
     finally {
       if(dbCursor != null) try{ dbCursor.close(); } catch(Exception ex) {}
     }
-    if(debug) System.out.println(logprefix + "find(" + collection + "," + mapFilter + ",\"" + fields + "\",\"" + orderBy + "\"," + limit + ") -> " + listResult.size() + " documents");
+    if(debug) log.println(logprefix + "find(" + collection + "," + mapFilter + ",\"" + fields + "\",\"" + orderBy + "\"," + limit + ") -> " + listResult.size() + " documents");
     return listResult;
   }
   
@@ -691,7 +700,7 @@ class NoSQLMongoDB2 implements INoSQLDB
   List<Map<String, Object>> find(String collection, Map<String, ?> mapFilter, String fields, String orderBy, int limit, int skip) 
     throws Exception
   {
-    if(debug) System.out.println(logprefix + "find(" + collection + "," + mapFilter + ",\"" + fields + "\",\"" + orderBy + "\"," + limit + "," + skip + ")...");
+    if(debug) log.println(logprefix + "find(" + collection + "," + mapFilter + ",\"" + fields + "\",\"" + orderBy + "\"," + limit + "," + skip + ")...");
     
     DBObject keys   = null;
     String[] toexcl = null;
@@ -733,19 +742,19 @@ class NoSQLMongoDB2 implements INoSQLDB
         }
         String sOrderClause = orderBy.substring(iBegin).trim();
         dbsort.append(getOrderField(sOrderClause), getOrderType(sOrderClause));
-        if(debug) System.out.println(logprefix + "find " + collection + ".find(" + query + ").sort(" + dbsort + ")");
+        if(debug) log.println(logprefix + "find " + collection + ".find(" + query + ").sort(" + dbsort + ")");
         dbCursor = dbCollection.find(query, keys).sort(dbsort);
       }
       else {
-        if(debug) System.out.println(logprefix + "find " + collection + ".find(" + query + ")");
+        if(debug) log.println(logprefix + "find " + collection + ".find(" + query + ")");
         dbCursor = dbCollection.find(query, keys);
       }
       if(skip > 0) {
-        if(debug) System.out.println(logprefix + " " + collection + ".skip(" + skip + ")");
+        if(debug) log.println(logprefix + " " + collection + ".skip(" + skip + ")");
         dbCursor.skip(skip);
       }
       if(limit > 0) {
-        if(debug) System.out.println(logprefix + " " + collection + ".limit(" + limit + ")");
+        if(debug) log.println(logprefix + " " + collection + ".limit(" + limit + ")");
         dbCursor.limit(limit);
       }
       while(dbCursor.hasNext()) {
@@ -770,7 +779,7 @@ class NoSQLMongoDB2 implements INoSQLDB
     finally {
       if(dbCursor != null) try{ dbCursor.close(); } catch(Exception ex) {}
     }
-    if(debug) System.out.println(logprefix + "find(" + collection + "," + mapFilter + ",\"" + fields + "\",\"" + orderBy + "\"," + limit + "," + skip + ") -> " + listResult.size() + " documents");
+    if(debug) log.println(logprefix + "find(" + collection + "," + mapFilter + ",\"" + fields + "\",\"" + orderBy + "\"," + limit + "," + skip + ") -> " + listResult.size() + " documents");
     return listResult;
   }
   
@@ -779,7 +788,7 @@ class NoSQLMongoDB2 implements INoSQLDB
   List<Map<String, Object>> search(String collection, String field, String text)
     throws Exception
   {
-    if(debug) System.out.println(logprefix + "search(" + collection + "," + field + "," + text + ")...");
+    if(debug) log.println(logprefix + "search(" + collection + "," + field + "," + text + ")...");
     
     List<Map<String, Object>> listResult = new ArrayList<Map<String, Object>> ();
     DBCursor dbCursor = null;
@@ -788,14 +797,14 @@ class NoSQLMongoDB2 implements INoSQLDB
       
       if(indexesCreated == null) indexesCreated = new HashSet<String> ();
       if(!indexesCreated.contains(collection + "." + field)) {
-        if(debug) System.out.println(logprefix + "search " + collection + ".createIndex({\"" + field + "\":\"text\"})...");
+        if(debug) log.println(logprefix + "search " + collection + ".createIndex({\"" + field + "\":\"text\"})...");
         dbCollection.createIndex(new BasicDBObject(field, "text"));
         indexesCreated.add(collection + "." + field);
       }
       
       BasicDBObject query = new BasicDBObject("$text", new BasicDBObject("$search", text));
       
-      if(debug) System.out.println(logprefix + "find " + collection + ".find(" + query + ").limit(" + defLimit + ")");
+      if(debug) log.println(logprefix + "find " + collection + ".find(" + query + ").limit(" + defLimit + ")");
       
       dbCursor = dbCollection.find(query).limit(defLimit);
       while(dbCursor.hasNext()) {
@@ -814,7 +823,7 @@ class NoSQLMongoDB2 implements INoSQLDB
     finally {
       if(dbCursor != null) try{ dbCursor.close(); } catch(Exception ex) {}
     }
-    if(debug) System.out.println(logprefix + "search(" + collection + "," + field + "," + text + ") -> " + listResult.size() + " documents");
+    if(debug) log.println(logprefix + "search(" + collection + "," + field + "," + text + ") -> " + listResult.size() + " documents");
     return listResult;
   }
   
@@ -823,7 +832,7 @@ class NoSQLMongoDB2 implements INoSQLDB
   List<Map<String, Object>> group(String collection, Map<String, ?> mapFilter, String field, String groupFunction)
     throws Exception
   {
-    if(debug) System.out.println(logprefix + "group(" + collection + "," + mapFilter + ",\"" + field + "\",\"" + groupFunction + "\")...");
+    if(debug) log.println(logprefix + "group(" + collection + "," + mapFilter + ",\"" + field + "\",\"" + groupFunction + "\")...");
     
     List<Map<String, Object>> listResult = new ArrayList<Map<String, Object>> ();
     
@@ -873,7 +882,7 @@ class NoSQLMongoDB2 implements INoSQLDB
       
       listResult.add(mapRecord);
     }
-    if(debug) System.out.println(logprefix + "group(" + collection + "," + mapFilter + ",\"" + field + "\",\"" + groupFunction + "\") -> " + listResult.size() + " documents");
+    if(debug) log.println(logprefix + "group(" + collection + "," + mapFilter + ",\"" + field + "\",\"" + groupFunction + "\") -> " + listResult.size() + " documents");
     return listResult;
   }
   
@@ -882,18 +891,18 @@ class NoSQLMongoDB2 implements INoSQLDB
   Map<String, Object> read(String collection, String id)
     throws Exception
   {
-    if(debug) System.out.println(logprefix + "read(" + collection + "," + id + ")...");
+    if(debug) log.println(logprefix + "read(" + collection + "," + id + ")...");
     
     DBCollection dbCollection = db.getCollection(collection);
     
     BasicDBObject query = buildQueryFilter(id);
     
-    if(debug) System.out.println(logprefix + "read " + collection + ".findOne(" + query + ")");
+    if(debug) log.println(logprefix + "read " + collection + ".findOne(" + query + ")");
     
     DBObject dbObject = dbCollection.findOne(query);
     
     if(dbObject == null) {
-      if(debug) System.out.println(logprefix + "read(" + collection + "," + id + ") -> null");
+      if(debug) log.println(logprefix + "read(" + collection + "," + id + ") -> null");
       return null;
     }
     
@@ -904,7 +913,7 @@ class NoSQLMongoDB2 implements INoSQLDB
     Map mapResult = dbObject.toMap();
     if(_id != null) mapResult.put("_id", _id);
     
-    if(debug) System.out.println(logprefix + "read(" + collection + "," + id + ") -> " + mapResult);
+    if(debug) log.println(logprefix + "read(" + collection + "," + id + ") -> " + mapResult);
     return mapResult;
   }
   
@@ -913,17 +922,17 @@ class NoSQLMongoDB2 implements INoSQLDB
   int count(String collection, Map<String, ?> mapFilter)
     throws Exception
   {
-    if(debug) System.out.println(logprefix + "count(" + collection + "," + mapFilter + ")...");
+    if(debug) log.println(logprefix + "count(" + collection + "," + mapFilter + ")...");
     
     DBCollection dbCollection = db.getCollection(collection);
     
     BasicDBObject query = buildQueryFilter(mapFilter);
     
-    if(debug) System.out.println(logprefix + "count " + collection + ".count(" + query + ")");
+    if(debug) log.println(logprefix + "count " + collection + ".count(" + query + ")");
     
     int result = (int) dbCollection.count(query);
     
-    if(debug) System.out.println(logprefix + "count(" + collection + "," + mapFilter + ") -> " + result);
+    if(debug) log.println(logprefix + "count(" + collection + "," + mapFilter + ") -> " + result);
     return result;
   }
   
@@ -932,7 +941,7 @@ class NoSQLMongoDB2 implements INoSQLDB
   boolean createIndex(String collection, String field, int type)
     throws Exception
   {
-    if(debug) System.out.println(logprefix + "createIndex(" + collection + "," + field + "," + type + ")...");
+    if(debug) log.println(logprefix + "createIndex(" + collection + "," + field + "," + type + ")...");
     boolean result = false;
     
     if(type == 0) type = 1;
@@ -941,13 +950,13 @@ class NoSQLMongoDB2 implements INoSQLDB
     
     if(indexesCreated == null) indexesCreated = new HashSet<String> ();
     if(!indexesCreated.contains(collection + "." + field)) {
-      if(debug) System.out.println(logprefix + "createIndex " + collection + ".createIndex({\"" + field + "\":" + type + "})...");
+      if(debug) log.println(logprefix + "createIndex " + collection + ".createIndex({\"" + field + "\":" + type + "})...");
       dbCollection.createIndex(new BasicDBObject(field, type));
       indexesCreated.add(collection + "." + field);
       result = true;
     }
     
-    if(debug) System.out.println(logprefix + "createIndex(" + collection + "," + field + "," + type + ") -> " + result);
+    if(debug) log.println(logprefix + "createIndex(" + collection + "," + field + "," + type + ") -> " + result);
     return result;
   }
   
@@ -956,7 +965,7 @@ class NoSQLMongoDB2 implements INoSQLDB
   List<Map<String, Object>> listIndexes(String collection)
     throws Exception
   {
-    if(debug) System.out.println(logprefix + "listIndexes(" + collection + ")...");
+    if(debug) log.println(logprefix + "listIndexes(" + collection + ")...");
     
     List<Map<String, Object>> listResult = new ArrayList<Map<String, Object>>();
     
@@ -971,7 +980,7 @@ class NoSQLMongoDB2 implements INoSQLDB
       listResult.add(index.toMap());
     }
     
-    if(debug) System.out.println(logprefix + "listIndexes(" + collection + ") -> " + listResult);
+    if(debug) log.println(logprefix + "listIndexes(" + collection + ") -> " + listResult);
     return listResult;
   }
   
@@ -990,10 +999,10 @@ class NoSQLMongoDB2 implements INoSQLDB
   {
     if(debug) {
       if(content == null) {
-        System.out.println(logprefix + "writeFile(" + filename + ",null," + mapMetadata + "," + mapAttributes + ")...");
+        log.println(logprefix + "writeFile(" + filename + ",null," + mapMetadata + "," + mapAttributes + ")...");
       }
       else {
-        System.out.println(logprefix + "writeFile(" + filename + ",byte[" + content.length + "]," + mapMetadata + "," + mapAttributes + ")...");
+        log.println(logprefix + "writeFile(" + filename + ",byte[" + content.length + "]," + mapMetadata + "," + mapAttributes + ")...");
       }
     }
     
@@ -1019,10 +1028,10 @@ class NoSQLMongoDB2 implements INoSQLDB
     String id = getId(gridFSInputFile);
     if(debug) {
       if(content == null) {
-        System.out.println(logprefix + "writeFile(" + filename + ",null," + mapMetadata + "," + mapAttributes + ") -> " + id);
+        log.println(logprefix + "writeFile(" + filename + ",null," + mapMetadata + "," + mapAttributes + ") -> " + id);
       }
       else {
-        System.out.println(logprefix + "writeFile(" + filename + ",byte[" + content.length + "]," + mapMetadata + "," + mapAttributes + ") -> " + id);
+        log.println(logprefix + "writeFile(" + filename + ",byte[" + content.length + "]," + mapMetadata + "," + mapAttributes + ") -> " + id);
       }
     }
     return id;
@@ -1033,7 +1042,7 @@ class NoSQLMongoDB2 implements INoSQLDB
   List<Map<String, Object>> findFiles(String filename, Map<String, ?> mapFilter)
     throws Exception
   {
-    if(debug) System.out.println(logprefix + "findFiles(" + filename + "," + mapFilter + ")...");
+    if(debug) log.println(logprefix + "findFiles(" + filename + "," + mapFilter + ")...");
     
     GridFS gridFS = new GridFS(db);
     
@@ -1048,7 +1057,7 @@ class NoSQLMongoDB2 implements INoSQLDB
     
     List<GridFSDBFile> listOfGridFSDBFile = gridFS.find(query);
     if(listOfGridFSDBFile == null) {
-      if(debug) System.out.println(logprefix + "findFiles(" + filename + "," + mapFilter + ") -> 0 files (listOfGridFSDBFile = null)");
+      if(debug) log.println(logprefix + "findFiles(" + filename + "," + mapFilter + ") -> 0 files (listOfGridFSDBFile = null)");
       return Collections.EMPTY_LIST;
     }
     
@@ -1066,7 +1075,7 @@ class NoSQLMongoDB2 implements INoSQLDB
       listResult.add(mapRecord);
     }
     
-    if(debug) System.out.println(logprefix + "findFiles(" + filename + "," + mapFilter + ") -> " + listResult.size() + " files");
+    if(debug) log.println(logprefix + "findFiles(" + filename + "," + mapFilter + ") -> " + listResult.size() + " files");
     return listResult;
   }
   
@@ -1075,7 +1084,7 @@ class NoSQLMongoDB2 implements INoSQLDB
   Map<String, Object> readFile(String filename)
     throws Exception
   {
-    if(debug) System.out.println(logprefix + "readFile(" + filename + ")...");
+    if(debug) log.println(logprefix + "readFile(" + filename + ")...");
     
     GridFS gridFS = new GridFS(db);
     
@@ -1095,7 +1104,7 @@ class NoSQLMongoDB2 implements INoSQLDB
     mapResult.put(FILE_LENGTH,      gridFSDBFile.getLength());
     mapResult.put(FILE_DATE_UPLOAD, gridFSDBFile.getUploadDate());
     
-    if(debug) System.out.println(logprefix + "readFile(" + filename + ") -> {" + mapResult.size() + "}");
+    if(debug) log.println(logprefix + "readFile(" + filename + ") -> {" + mapResult.size() + "}");
     return mapResult;
   }
   
@@ -1104,19 +1113,19 @@ class NoSQLMongoDB2 implements INoSQLDB
   boolean removeFile(String filename)
     throws Exception
   {
-    if(debug) System.out.println(logprefix + "removeFile(" + filename + ")...");
+    if(debug) log.println(logprefix + "removeFile(" + filename + ")...");
     
     GridFS gridFS = new GridFS(db);
     
     GridFSDBFile gridFSDBFile = gridFS.findOne(filename);
     if(gridFSDBFile == null) {
-      if(debug) System.out.println(logprefix + "removeFile(" + filename + ") -> false (gridFSDBFile = null)");
+      if(debug) log.println(logprefix + "removeFile(" + filename + ") -> false (gridFSDBFile = null)");
       return false;
     }
     
     gridFS.remove(filename);
     
-    if(debug) System.out.println(logprefix + "removeFile(" + filename + ") -> true");
+    if(debug) log.println(logprefix + "removeFile(" + filename + ") -> true");
     return true;
   }
   
@@ -1125,20 +1134,20 @@ class NoSQLMongoDB2 implements INoSQLDB
   boolean renameFile(String filename, String newFilename)
     throws Exception
   {
-    if(debug) System.out.println(logprefix + "renameFile(" + filename + "," + newFilename + ")...");
+    if(debug) log.println(logprefix + "renameFile(" + filename + "," + newFilename + ")...");
     
     GridFS gridFS = new GridFS(db);
     
     GridFSDBFile gridFSDBFile = gridFS.findOne(filename);
     if(gridFSDBFile == null) {
-      if(debug) System.out.println(logprefix + "renameFile(" + filename + "," + newFilename + ") -> false (gridFSDBFile = null)");
+      if(debug) log.println(logprefix + "renameFile(" + filename + "," + newFilename + ") -> false (gridFSDBFile = null)");
       return false;
     }
     
     gridFSDBFile.put("filename", newFilename);
     gridFSDBFile.save();
     
-    if(debug) System.out.println(logprefix + "renameFile(" + filename + "," + newFilename + ") -> true");
+    if(debug) log.println(logprefix + "renameFile(" + filename + "," + newFilename + ") -> true");
     return true;
   }
   
@@ -1478,7 +1487,7 @@ class NoSQLMongoDB2 implements INoSQLDB
         return mongoClient;
       }
       
-      if(lookup instanceof String){
+      if(lookup instanceof String) {
         mongoClient = mapMDBClient.get(lookup);
         if(mongoClient != null) return mongoClient;
         

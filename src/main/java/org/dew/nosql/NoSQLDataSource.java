@@ -1,9 +1,13 @@
 package org.dew.nosql;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.io.PrintStream;
 
 import java.net.URL;
 
+import java.util.Calendar;
 import java.util.Properties;
 
 import org.dew.nosql.util.WUtil;
@@ -13,7 +17,11 @@ class NoSQLDataSource
 {
   public static final boolean DEBUG = false;
   
-  public static Properties config = new Properties();
+  public static Properties  config = new Properties();
+  
+  public static String      logFilePath;
+  public static String      logDate = WUtil.formatDate(Calendar.getInstance(), "#");
+  public static PrintStream log;
   
   static {
     InputStream is = null;
@@ -31,47 +39,47 @@ class NoSQLDataSource
       ex.printStackTrace();
     }
     finally {
-      try { is.close(); } catch (Exception oEx) {}
+      try { is.close(); } catch (Exception ex) {}
     }
   }
   
   public static
-  String getProperty(String sKey)
+  String getProperty(String key)
   {
-    return config.getProperty(sKey);
+    return config.getProperty(key);
   }
   
   public static
-  String getProperty(String sKey, String sDefault)
+  String getProperty(String key, String defaultValue)
   {
-    return config.getProperty(sKey, sDefault);
+    return config.getProperty(key, defaultValue);
   }
   
   public static
-  String getProperty(String sKey, boolean boMandatory)
+  String getProperty(String key, boolean isMandatory)
     throws Exception
   {
-    String sResult = config.getProperty(sKey);
-    if(boMandatory) {
+    String sResult = config.getProperty(key);
+    if(isMandatory) {
       if(sResult == null || sResult.length() == 0) {
-        throw new Exception("Entry \"" + sKey + "\" of configuration is blank.");
+        throw new Exception("Entry \"" + key + "\" of configuration is blank.");
       }
     }
     return sResult;
   }
   
   public static
-  int getIntProperty(String sKey, int iDefault)
+  int getIntProperty(String sKey, int defaultValue)
   {
     String sValue = config.getProperty(sKey);
-    return WUtil.toInt(sValue, iDefault);
+    return WUtil.toInt(sValue, defaultValue);
   }
   
   public static
-  boolean getBooleanProperty(String sKey, boolean bDefault)
+  boolean getBooleanProperty(String sKey, boolean defaultValue)
   {
     String sValue = config.getProperty(sKey);
-    return WUtil.toBoolean(sValue, bDefault);
+    return WUtil.toBoolean(sValue, defaultValue);
   }
   
   public static
@@ -220,7 +228,41 @@ class NoSQLDataSource
       noSQLDB = new NoSQLMock(dbName);
     }
     
+    if(logFilePath != null && logFilePath.length() > 0) {
+      noSQLDB.setLog(getLog());
+    }
+    
     noSQLDB.setDebug(DEBUG);
     return noSQLDB;
+  }
+  
+  public static
+  PrintStream getLog()
+  {
+    if(logFilePath == null || logFilePath.length() == 0) {
+      return null;
+    }
+    if(log != null) {
+      if(logFilePath.indexOf("%d") >= 0) {
+        String currDate = WUtil.formatDate(Calendar.getInstance(), "#");
+        if(currDate.equals(logDate)) return log;
+        logFilePath.replace("%d",currDate);
+        logDate = currDate;
+      }
+      else {
+        return log;
+      }
+    }
+    try{
+      FileOutputStream fileoutputstream = new FileOutputStream(logFilePath, false);
+      if(log != null && log != System.out) {
+        try { log.close(); } catch(Exception ex) {}
+      }
+      log = new PrintStream(fileoutputstream, true);
+    }
+    catch(FileNotFoundException ex){
+      ex.printStackTrace();
+    }
+    return log;
   }
 }

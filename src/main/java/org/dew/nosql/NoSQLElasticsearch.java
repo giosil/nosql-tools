@@ -3,7 +3,7 @@ package org.dew.nosql;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
-
+import java.io.PrintStream;
 import java.lang.reflect.Array;
 
 import java.net.HttpURLConnection;
@@ -48,6 +48,7 @@ class NoSQLElasticsearch implements INoSQLDB
   protected static String logprefix = NoSQLElasticsearch.class.getSimpleName() + ".";
   
   protected boolean debug    = false;
+  protected PrintStream log  = System.out;
   protected String  host     = "localhost";
   protected int     port     = 9200;
   protected String  user     = "";
@@ -137,14 +138,21 @@ class NoSQLElasticsearch implements INoSQLDB
   
   @Override
   public 
+  void setLog(PrintStream log) 
+  {
+    this.log = log != null ? log : System.out; 
+  }
+  
+  @Override
+  public 
   Map<String, Object> load(Map<String, Object> mapOptions)
     throws Exception
   {
-    if(debug) System.out.println(logprefix + "load(" + mapOptions + ")...");
+    if(debug) log.println(logprefix + "load(" + mapOptions + ")...");
     
     Map<String, Object> mapResult = getInfo();
     
-    if(debug) System.out.println(logprefix + "load(" + mapOptions + ") -> " + mapResult);
+    if(debug) log.println(logprefix + "load(" + mapOptions + ") -> " + mapResult);
     return mapResult;
   }
   
@@ -153,11 +161,11 @@ class NoSQLElasticsearch implements INoSQLDB
   boolean save(Map<String, Object> mapOptions)
     throws Exception
   {
-    if(debug) System.out.println(logprefix + "save(" + mapOptions + ")...");
+    if(debug) log.println(logprefix + "save(" + mapOptions + ")...");
     
     boolean result = false;
     
-    if(debug) System.out.println(logprefix + "save(" + mapOptions + ") -> " + result);
+    if(debug) log.println(logprefix + "save(" + mapOptions + ") -> " + result);
     return result;
   }
   
@@ -166,7 +174,7 @@ class NoSQLElasticsearch implements INoSQLDB
   Map<String, Object> getInfo()
     throws Exception
   {
-    if(debug) System.out.println(logprefix + "getInfo()...");
+    if(debug) log.println(logprefix + "getInfo()...");
     
     String url = getURL("..", null);
     
@@ -180,7 +188,7 @@ class NoSQLElasticsearch implements INoSQLDB
       mapResult.put("version", mapVersion.get("number"));
     }
     
-    if(debug) System.out.println(logprefix + "getInfo() -> " + mapResult);
+    if(debug) log.println(logprefix + "getInfo() -> " + mapResult);
     return mapResult;
   }
   
@@ -189,7 +197,7 @@ class NoSQLElasticsearch implements INoSQLDB
   List<String> getCollections()
     throws Exception
   {
-    if(debug) System.out.println(logprefix + "getCollections()...");
+    if(debug) log.println(logprefix + "getCollections()...");
     
     String url = getURL(null, null);
     
@@ -222,7 +230,7 @@ class NoSQLElasticsearch implements INoSQLDB
     }
     
     Collections.sort(listResult);
-    if(debug) System.out.println(logprefix + "getCollections() -> " + listResult);
+    if(debug) log.println(logprefix + "getCollections() -> " + listResult);
     return listResult;
   }
   
@@ -231,9 +239,9 @@ class NoSQLElasticsearch implements INoSQLDB
   boolean drop(String collection) 
     throws Exception
   {
-    if(debug) System.out.println(logprefix + "drop(" + collection + ")...");
+    if(debug) log.println(logprefix + "drop(" + collection + ")...");
     boolean result = false;
-    if(debug) System.out.println(logprefix + "drop(" + collection + ") -> " + result);
+    if(debug) log.println(logprefix + "drop(" + collection + ") -> " + result);
     return result;
   }
   
@@ -242,7 +250,7 @@ class NoSQLElasticsearch implements INoSQLDB
   String insert(String collection, Map<String, ?> mapData)
     throws Exception
   {
-    if(debug) System.out.println(logprefix + "insert(" + collection + "," + mapData + ")...");
+    if(debug) log.println(logprefix + "insert(" + collection + "," + mapData + ")...");
     
     String id   = generateId();
     String url  = getURL(collection, id);
@@ -251,7 +259,7 @@ class NoSQLElasticsearch implements INoSQLDB
     WMap resPUT = http("PUT", url, data);
     
     String result = isCreated(resPUT) ? id : null;
-    if(debug) System.out.println(logprefix + "insert(" + collection + "," + mapData + ") -> " + result);
+    if(debug) log.println(logprefix + "insert(" + collection + "," + mapData + ") -> " + result);
     return result;
   }
   
@@ -260,7 +268,7 @@ class NoSQLElasticsearch implements INoSQLDB
   String insert(String collection, Map<String, ?> mapData, boolean refresh)
     throws Exception
   {
-    if(debug) System.out.println(logprefix + "insert(" + collection + "," + mapData + "," + refresh + ")...");
+    if(debug) log.println(logprefix + "insert(" + collection + "," + mapData + "," + refresh + ")...");
     
     String id   = generateId();
     String url  = getURL(collection, id);
@@ -271,7 +279,7 @@ class NoSQLElasticsearch implements INoSQLDB
     WMap resPUT = http("PUT", url, data);
     
     String result = isCreated(resPUT) ? id : null;
-    if(debug) System.out.println(logprefix + "insert(" + collection + "," + mapData + "," + refresh + ") -> " + result);
+    if(debug) log.println(logprefix + "insert(" + collection + "," + mapData + "," + refresh + ") -> " + result);
     return result;
   }
   
@@ -282,18 +290,18 @@ class NoSQLElasticsearch implements INoSQLDB
   {
     if(debug) {
       if(listData != null) {
-        System.out.println(logprefix + "bulkIns(" + collection + ", " + listData.size() + " documents)...");
+        log.println(logprefix + "bulkIns(" + collection + ", " + listData.size() + " documents)...");
       }
       else {
-        System.out.println(logprefix + "bulkIns(" + collection + ", null)...");
+        log.println(logprefix + "bulkIns(" + collection + ", null)...");
       }
     }
     if(listData == null || listData.size() == 0) {
       if(listData != null) {
-        System.out.println(logprefix + "bulkIns(" + collection + ", " + listData.size() + " documents) -> 0");
+        log.println(logprefix + "bulkIns(" + collection + ", " + listData.size() + " documents) -> 0");
       }
       else {
-        System.out.println(logprefix + "bulkIns(" + collection + ", null) -> 0");
+        log.println(logprefix + "bulkIns(" + collection + ", null) -> 0");
       }
       return 0;
     }
@@ -316,10 +324,10 @@ class NoSQLElasticsearch implements INoSQLDB
     
     boolean errors = resPUT.getBoolean("errors");
     if(errors) {
-      System.out.println(logprefix + "bulkIns(" + collection + ", " + listData.size() + " documents) -> 0 (errors = true)");
+      log.println(logprefix + "bulkIns(" + collection + ", " + listData.size() + " documents) -> 0 (errors = true)");
       return countIns;
     }
-    System.out.println(logprefix + "bulkIns(" + collection + ", " + listData.size() + " documents) -> " + countIns);
+    log.println(logprefix + "bulkIns(" + collection + ", " + listData.size() + " documents) -> " + countIns);
     return countIns;
   }
   
@@ -328,7 +336,7 @@ class NoSQLElasticsearch implements INoSQLDB
   boolean replace(String collection, Map<String, ?> mapData, String id)
     throws Exception
   {
-    if(debug) System.out.println(logprefix + "replace(" + collection + "," + mapData + ")...");
+    if(debug) log.println(logprefix + "replace(" + collection + "," + mapData + ")...");
     
     String url  = getURL(collection, id);
     String data = mapData != null ? JSON.stringify(mapData) : "{}";
@@ -336,7 +344,7 @@ class NoSQLElasticsearch implements INoSQLDB
     WMap resPUT = http("PUT", url, data);
     
     boolean result = isCreated(resPUT);
-    if(debug) System.out.println(logprefix + "replace(" + collection + "," + mapData + ") -> " + result);
+    if(debug) log.println(logprefix + "replace(" + collection + "," + mapData + ") -> " + result);
     return result;
   }
   
@@ -345,10 +353,10 @@ class NoSQLElasticsearch implements INoSQLDB
   int update(String collection, Map<String, ?> mapData, String id)
     throws Exception
   {
-    if(debug) System.out.println(logprefix + "update(" + collection + "," + mapData + "," + id + ")...");
+    if(debug) log.println(logprefix + "update(" + collection + "," + mapData + "," + id + ")...");
     
     if(mapData == null || mapData.isEmpty()) {
-      if(debug) System.out.println(logprefix + "update(" + collection + "," + mapData + "," + id + ") -> 0");
+      if(debug) log.println(logprefix + "update(" + collection + "," + mapData + "," + id + ") -> 0");
       return 0;
     }
     
@@ -364,11 +372,11 @@ class NoSQLElasticsearch implements INoSQLDB
       if(message == null || !message.startsWith("{")) {
         throw ex;
       }
-      if(debug) System.out.println(logprefix + "update(" + collection + "," + mapData + "," + id + ") -> 0 " + message);
+      if(debug) log.println(logprefix + "update(" + collection + "," + mapData + "," + id + ") -> 0 " + message);
       return 0;
     }
     
-    if(debug) System.out.println(logprefix + "update(" + collection + "," + mapData + "," + id + ") -> " + 1);
+    if(debug) log.println(logprefix + "update(" + collection + "," + mapData + "," + id + ") -> " + 1);
     return 1;
   }
   
@@ -377,10 +385,10 @@ class NoSQLElasticsearch implements INoSQLDB
   int update(String collection, Map<String, ?> mapData, Map<String, ?> mapFilter)
     throws Exception
   {
-    if(debug) System.out.println(logprefix + "update(" + collection + "," + mapData + "," + mapFilter + ")...");
+    if(debug) log.println(logprefix + "update(" + collection + "," + mapData + "," + mapFilter + ")...");
     
     if(mapData == null || mapData.isEmpty()) {
-      if(debug) System.out.println(logprefix + "update(" + collection + "," + mapData + "," + mapFilter + ") -> 0");
+      if(debug) log.println(logprefix + "update(" + collection + "," + mapData + "," + mapFilter + ") -> 0");
       return 0;
     }
     
@@ -391,7 +399,7 @@ class NoSQLElasticsearch implements INoSQLDB
     WMap hits = new WMap(resGET.getMap("hits"));
     List listHits = hits.getList("hits");
     if(listHits == null) {
-      if(debug) System.out.println(logprefix + "update(" + collection + "," + mapData + "," + mapFilter + ") -> 0 (hits=null)");
+      if(debug) log.println(logprefix + "update(" + collection + "," + mapData + "," + mapFilter + ") -> 0 (hits=null)");
       return 0;
     }
     
@@ -414,7 +422,7 @@ class NoSQLElasticsearch implements INoSQLDB
         if(message == null || !message.startsWith("{")) throw ex;
       }
     }
-    if(debug) System.out.println(logprefix + "update(" + collection + "," + mapData + "," + mapFilter + ") -> " + countUpd);
+    if(debug) log.println(logprefix + "update(" + collection + "," + mapData + "," + mapFilter + ") -> " + countUpd);
     return countUpd;
   }
   
@@ -423,7 +431,7 @@ class NoSQLElasticsearch implements INoSQLDB
   String upsert(String collection, Map<String, ?> mapData, Map<String, ?> mapFilter)
     throws Exception
   {
-    if(debug) System.out.println(logprefix + "upsert(" + collection + "," + mapData + "," + mapFilter + ")...");
+    if(debug) log.println(logprefix + "upsert(" + collection + "," + mapData + "," + mapFilter + ")...");
     
     String url  = getSearchURL(collection, mapFilter, null, 0, 0, "_source=false");
     
@@ -432,7 +440,7 @@ class NoSQLElasticsearch implements INoSQLDB
     WMap hits = new WMap(resGET.getMap("hits"));
     List listHits = hits.getList("hits");
     if(listHits == null) {
-      if(debug) System.out.println(logprefix + "upsert(" + collection + "," + mapData + "," + mapFilter + ") -> null (hits=null)");
+      if(debug) log.println(logprefix + "upsert(" + collection + "," + mapData + "," + mapFilter + ") -> null (hits=null)");
       return null;
     }
     
@@ -466,7 +474,7 @@ class NoSQLElasticsearch implements INoSQLDB
       
       if(isCreated(resPUT)) countUpd = 1;
     }
-    if(debug) System.out.println(logprefix + "upsert(" + collection + "," + mapData + "," + mapFilter + ") -> " + id);
+    if(debug) log.println(logprefix + "upsert(" + collection + "," + mapData + "," + mapFilter + ") -> " + id);
     return id;
   }
   
@@ -475,7 +483,7 @@ class NoSQLElasticsearch implements INoSQLDB
   int unset(String collection, String fields, String id)
     throws Exception
   {
-    if(debug) System.out.println(logprefix + "unset(" + collection + "," + fields + "," + id + ")...");
+    if(debug) log.println(logprefix + "unset(" + collection + "," + fields + "," + id + ")...");
     
     if(fields == null || fields.length() == 0) return 0;
     
@@ -497,11 +505,11 @@ class NoSQLElasticsearch implements INoSQLDB
       if(message == null || !message.startsWith("{")) {
         throw ex;
       }
-      if(debug) System.out.println(logprefix + "unset(" + collection + "," + fields + "," + id + ") -> 0");
+      if(debug) log.println(logprefix + "unset(" + collection + "," + fields + "," + id + ") -> 0");
       return 0;
     }
     
-    if(debug) System.out.println(logprefix + "unset(" + collection + "," + fields + "," + id + ") -> 1");
+    if(debug) log.println(logprefix + "unset(" + collection + "," + fields + "," + id + ") -> 1");
     return 1;
   }
   
@@ -510,7 +518,7 @@ class NoSQLElasticsearch implements INoSQLDB
   int inc(String collection, String id, String field, Number value)
     throws Exception
   {
-    if(debug) System.out.println(logprefix + "inc(" + collection + "," + id + "," + field + "," + value + ")...");
+    if(debug) log.println(logprefix + "inc(" + collection + "," + id + "," + field + "," + value + ")...");
     
     String url  = getURL(collection, id, "_update");
     
@@ -523,11 +531,11 @@ class NoSQLElasticsearch implements INoSQLDB
       if(message == null || !message.startsWith("{")) {
         throw ex;
       }
-      if(debug) System.out.println(logprefix + "inc(" + collection + "," + id + "," + field + "," + value + ") -> 0");
+      if(debug) log.println(logprefix + "inc(" + collection + "," + id + "," + field + "," + value + ") -> 0");
       return 0;
     }
     
-    if(debug) System.out.println(logprefix + "inc(" + collection + "," + id + "," + field + "," + value + ") -> 1");
+    if(debug) log.println(logprefix + "inc(" + collection + "," + id + "," + field + "," + value + ") -> 1");
     return 1;
   }
   
@@ -536,7 +544,7 @@ class NoSQLElasticsearch implements INoSQLDB
   int inc(String collection, String id, String field1, Number value1, String field2, Number value2)
     throws Exception
   {
-    if(debug) System.out.println(logprefix + "inc(" + collection + "," + id + "," + field1 + "," + value1 + "," + field2 + "," + value2 + ")...");
+    if(debug) log.println(logprefix + "inc(" + collection + "," + id + "," + field1 + "," + value1 + "," + field2 + "," + value2 + ")...");
     
     String url  = getURL(collection, id, "_update");
     
@@ -550,11 +558,11 @@ class NoSQLElasticsearch implements INoSQLDB
       if(message == null || !message.startsWith("{")) {
         throw ex;
       }
-      if(debug) System.out.println(logprefix + "inc(" + collection + "," + id + "," + field1 + "," + value1 + "," + field2 + "," + value2 + ") -> 0");
+      if(debug) log.println(logprefix + "inc(" + collection + "," + id + "," + field1 + "," + value1 + "," + field2 + "," + value2 + ") -> 0");
       return 0;
     }
     
-    if(debug) System.out.println(logprefix + "inc(" + collection + "," + id + "," + field1 + "," + value1 + "," + field2 + "," + value2 + ") -> 1");
+    if(debug) log.println(logprefix + "inc(" + collection + "," + id + "," + field1 + "," + value1 + "," + field2 + "," + value2 + ") -> 1");
     return 1;
   }
   
@@ -563,7 +571,7 @@ class NoSQLElasticsearch implements INoSQLDB
   int inc(String collection, Map<String, ?> mapFilter, String field, Number value)
     throws Exception
   {
-    if(debug) System.out.println(logprefix + "inc(" + collection + "," + mapFilter + "," + field + "," + value + ")...");
+    if(debug) log.println(logprefix + "inc(" + collection + "," + mapFilter + "," + field + "," + value + ")...");
     
     String url  = getSearchURL(collection, mapFilter, null, 0, 0, "_source=false");
     
@@ -572,7 +580,7 @@ class NoSQLElasticsearch implements INoSQLDB
     WMap hits = new WMap(resGET.getMap("hits"));
     List listHits = hits.getList("hits");
     if(listHits == null) {
-      if(debug) System.out.println(logprefix + "inc(" + collection + "," + mapFilter + "," + field + "," + value + ") -> 0 (hits=null)");
+      if(debug) log.println(logprefix + "inc(" + collection + "," + mapFilter + "," + field + "," + value + ") -> 0 (hits=null)");
       return 0;
     }
     
@@ -595,7 +603,7 @@ class NoSQLElasticsearch implements INoSQLDB
         if(message == null || !message.startsWith("{")) throw ex;
       }
     }
-    if(debug) System.out.println(logprefix + "inc(" + collection + "," + mapFilter + "," + field + "," + value + ") -> " + countUpd);
+    if(debug) log.println(logprefix + "inc(" + collection + "," + mapFilter + "," + field + "," + value + ") -> " + countUpd);
     return countUpd;
   }
   
@@ -604,7 +612,7 @@ class NoSQLElasticsearch implements INoSQLDB
   int inc(String collection, Map<String, ?> mapFilter, String field1, Number value1, String field2, Number value2)
     throws Exception
   {
-    if(debug) System.out.println(logprefix + "inc(" + collection + "," + mapFilter + "," + field1 + "," + value1 + "," + field2 + "," + value2 + ")...");
+    if(debug) log.println(logprefix + "inc(" + collection + "," + mapFilter + "," + field1 + "," + value1 + "," + field2 + "," + value2 + ")...");
     
     String url  = getSearchURL(collection, mapFilter, null, 0, 0, "_source=false");
     
@@ -613,7 +621,7 @@ class NoSQLElasticsearch implements INoSQLDB
     WMap hits = new WMap(resGET.getMap("hits"));
     List listHits = hits.getList("hits");
     if(listHits == null) {
-      if(debug) System.out.println(logprefix + "inc(" + collection + "," + mapFilter + "," + field1 + "," + value1 + "," + field2 + "," + value2 + ") -> 0 (hits=null)");
+      if(debug) log.println(logprefix + "inc(" + collection + "," + mapFilter + "," + field1 + "," + value1 + "," + field2 + "," + value2 + ") -> 0 (hits=null)");
       return 0;
     }
     
@@ -637,7 +645,7 @@ class NoSQLElasticsearch implements INoSQLDB
         if(message == null || !message.startsWith("{")) throw ex;
       }
     }
-    if(debug) System.out.println(logprefix + "inc(" + collection + "," + mapFilter + "," + field1 + "," + value1 + "," + field2 + "," + value2 + ") -> " + countUpd);
+    if(debug) log.println(logprefix + "inc(" + collection + "," + mapFilter + "," + field1 + "," + value1 + "," + field2 + "," + value2 + ") -> " + countUpd);
     return countUpd;
   }
   
@@ -646,10 +654,10 @@ class NoSQLElasticsearch implements INoSQLDB
   int delete(String collection, String id)
     throws Exception
   {
-    if(debug) System.out.println(logprefix + "delete(" + collection + "," + id + ")...");
+    if(debug) log.println(logprefix + "delete(" + collection + "," + id + ")...");
     
     if(collection == null || id == null) {
-      if(debug) System.out.println(logprefix + "delete(" + collection + "," + id + ") -> -1");
+      if(debug) log.println(logprefix + "delete(" + collection + "," + id + ") -> -1");
       return -1;
     }
     if(collection.equals("!")) collection = null;
@@ -660,10 +668,10 @@ class NoSQLElasticsearch implements INoSQLDB
     WMap resDEL = http("DELETE", urlDEL, null);
     
     if(isDeleted(resDEL)) {
-      if(debug) System.out.println(logprefix + "delete(" + collection + "," + id + ") -> 1");
+      if(debug) log.println(logprefix + "delete(" + collection + "," + id + ") -> 1");
       return 1;
     }
-    if(debug) System.out.println(logprefix + "delete(" + collection + "," + id + ") -> 0 (found=false)");
+    if(debug) log.println(logprefix + "delete(" + collection + "," + id + ") -> 0 (found=false)");
     return 0;
   }
   
@@ -672,23 +680,23 @@ class NoSQLElasticsearch implements INoSQLDB
   int delete(String collection, Map<String, ?> mapFilter)
     throws Exception
   {
-    if(debug) System.out.println(logprefix + "delete(" + collection + "," + mapFilter + ")...");
+    if(debug) log.println(logprefix + "delete(" + collection + "," + mapFilter + ")...");
     
     if(collection == null || mapFilter == null) {
-      if(debug) System.out.println(logprefix + "delete(" + collection + "," + mapFilter + ") -> -1");
+      if(debug) log.println(logprefix + "delete(" + collection + "," + mapFilter + ") -> -1");
       return -1;
     }
     
     String url = getSearchURL(collection, mapFilter, null, 0, 0, "_source=false");
     
-    if(debug) System.out.println(logprefix + "delete GET " + dec(url));
+    if(debug) log.println(logprefix + "delete GET " + dec(url));
     
     WMap resGET = http("GET", url, null);
     
     WMap hits = new WMap(resGET.getMap("hits"));
     List listHits = hits.getList("hits");
     if(listHits == null) {
-      if(debug) System.out.println(logprefix + "delete(" + collection + "," + mapFilter + ") -> 0 (hits=null)");
+      if(debug) log.println(logprefix + "delete(" + collection + "," + mapFilter + ") -> 0 (hits=null)");
       return 0;
     }
     
@@ -704,7 +712,7 @@ class NoSQLElasticsearch implements INoSQLDB
       
       if(isDeleted(resDEL)) countDel++;
     }
-    if(debug) System.out.println(logprefix + "delete(" + collection + "," + mapFilter + ") -> " + countDel);
+    if(debug) log.println(logprefix + "delete(" + collection + "," + mapFilter + ") -> " + countDel);
     return countDel;
   }
   
@@ -713,7 +721,7 @@ class NoSQLElasticsearch implements INoSQLDB
   List<Map<String, Object>> find(String collection, Map<String, ?> mapFilter, String fields)
     throws Exception
   {
-    if(debug) System.out.println(logprefix + "find(" + collection + "," + mapFilter + ",\"" + fields + "\")...");
+    if(debug) log.println(logprefix + "find(" + collection + "," + mapFilter + ",\"" + fields + "\")...");
     
     String[] toexcl = null;
     String  pfields = null;
@@ -753,7 +761,7 @@ class NoSQLElasticsearch implements INoSQLDB
     WMap hits = new WMap(resGET.getMap("hits"));
     List listHits = hits.getList("hits");
     if(listHits == null) {
-      if(debug) System.out.println(logprefix + "find(" + collection + "," + mapFilter + ") -> 0 documents (hits=null)");
+      if(debug) log.println(logprefix + "find(" + collection + "," + mapFilter + ") -> 0 documents (hits=null)");
       return new ArrayList(0);
     }
     
@@ -796,7 +804,7 @@ class NoSQLElasticsearch implements INoSQLDB
         }
       }
     }
-    if(debug) System.out.println(logprefix + "find(" + collection + "," + mapFilter + ",\"" + fields + "\") -> " + listResult.size() + " documents");
+    if(debug) log.println(logprefix + "find(" + collection + "," + mapFilter + ",\"" + fields + "\") -> " + listResult.size() + " documents");
     return listResult;
   }
   
@@ -805,7 +813,7 @@ class NoSQLElasticsearch implements INoSQLDB
   List<Map<String, Object>> find(String collection, Map<String, ?> mapFilter, String fields, String orderBy, int limit)
     throws Exception
   {
-    if(debug) System.out.println(logprefix + "find(" + collection + "," + mapFilter + ",\"" + fields + "\",\"" + orderBy + "\"," + limit + ")...");
+    if(debug) log.println(logprefix + "find(" + collection + "," + mapFilter + ",\"" + fields + "\",\"" + orderBy + "\"," + limit + ")...");
     
     String[] toexcl = null;
     String  pfields = null;
@@ -845,7 +853,7 @@ class NoSQLElasticsearch implements INoSQLDB
     WMap hits = new WMap(resGET.getMap("hits"));
     List listHits = hits.getList("hits");
     if(listHits == null) {
-      if(debug) System.out.println(logprefix + "find(" + collection + "," + mapFilter + "," + orderBy + "," + limit + ") -> 0 documents (hits=null)");
+      if(debug) log.println(logprefix + "find(" + collection + "," + mapFilter + "," + orderBy + "," + limit + ") -> 0 documents (hits=null)");
       return Collections.EMPTY_LIST;
     }
     
@@ -924,7 +932,7 @@ class NoSQLElasticsearch implements INoSQLDB
         listResult = reverse(listResult);
       }
     }
-    if(debug) System.out.println(logprefix + "find(" + collection + "," + mapFilter + ",\"" + fields + "\",\"" + orderBy + "\"," + limit + ") -> " + listResult.size() + " documents");
+    if(debug) log.println(logprefix + "find(" + collection + "," + mapFilter + ",\"" + fields + "\",\"" + orderBy + "\"," + limit + ") -> " + listResult.size() + " documents");
     return listResult;
   }
   
@@ -933,7 +941,7 @@ class NoSQLElasticsearch implements INoSQLDB
   List<Map<String, Object>> find(String collection, Map<String, ?> mapFilter, String fields, String orderBy, int limit, int skip) 
     throws Exception
   {
-    if(debug) System.out.println(logprefix + "find(" + collection + "," + mapFilter + ",\"" + fields + "\",\"" + orderBy + "\"," + limit + "," + skip + ")...");
+    if(debug) log.println(logprefix + "find(" + collection + "," + mapFilter + ",\"" + fields + "\",\"" + orderBy + "\"," + limit + "," + skip + ")...");
     
     String[] toexcl = null;
     String  pfields = null;
@@ -973,7 +981,7 @@ class NoSQLElasticsearch implements INoSQLDB
     WMap hits = new WMap(resGET.getMap("hits"));
     List listHits = hits.getList("hits");
     if(listHits == null) {
-      if(debug) System.out.println(logprefix + "find(" + collection + "," + mapFilter + "," + orderBy + "," + limit + "," + skip + ") -> 0 documents (hits=null)");
+      if(debug) log.println(logprefix + "find(" + collection + "," + mapFilter + "," + orderBy + "," + limit + "," + skip + ") -> 0 documents (hits=null)");
       return Collections.EMPTY_LIST;
     }
     
@@ -1052,7 +1060,7 @@ class NoSQLElasticsearch implements INoSQLDB
         listResult = reverse(listResult);
       }
     }
-    if(debug) System.out.println(logprefix + "find(" + collection + "," + mapFilter + ",\"" + fields + "\",\"" + orderBy + "\"," + limit + "," + skip + ") -> " + listResult.size() + " documents");
+    if(debug) log.println(logprefix + "find(" + collection + "," + mapFilter + ",\"" + fields + "\",\"" + orderBy + "\"," + limit + "," + skip + ") -> " + listResult.size() + " documents");
     return listResult;
   }
   
@@ -1061,7 +1069,7 @@ class NoSQLElasticsearch implements INoSQLDB
   List<Map<String, Object>> search(String collection, String field, String text)
     throws Exception
   {
-    if(debug) System.out.println(logprefix + "search(" + collection + "," + field + "," + text + ")...");
+    if(debug) log.println(logprefix + "search(" + collection + "," + field + "," + text + ")...");
     
     String url  = getSearchURL(collection, null, null);
     
@@ -1082,7 +1090,7 @@ class NoSQLElasticsearch implements INoSQLDB
     WMap hits = new WMap(resGET.getMap("hits"));
     List listHits = hits.getList("hits");
     if(listHits == null) {
-      if(debug) System.out.println(logprefix + "search(" + collection + "," + field + "," + text + ") -> 0 documents (hits=null)");
+      if(debug) log.println(logprefix + "search(" + collection + "," + field + "," + text + ") -> 0 documents (hits=null)");
       return Collections.EMPTY_LIST;
     }
     
@@ -1120,7 +1128,7 @@ class NoSQLElasticsearch implements INoSQLDB
         }
       }
     }
-    if(debug) System.out.println(logprefix + "search(" + collection + "," + field + "," + text + ") -> " + listResult.size() + " documents");
+    if(debug) log.println(logprefix + "search(" + collection + "," + field + "," + text + ") -> " + listResult.size() + " documents");
     return listResult;
   }
   
@@ -1129,7 +1137,7 @@ class NoSQLElasticsearch implements INoSQLDB
   List<Map<String, Object>> group(String collection, Map<String, ?> mapFilter, String field, String groupFunction)
     throws Exception
   {
-    if(debug) System.out.println(logprefix + "group(" + collection + "," + mapFilter + ",\"" + field + "\",\"" + groupFunction + "\")...");
+    if(debug) log.println(logprefix + "group(" + collection + "," + mapFilter + ",\"" + field + "\",\"" + groupFunction + "\")...");
     
     String alias = "";
     String funct = "";
@@ -1165,7 +1173,7 @@ class NoSQLElasticsearch implements INoSQLDB
     WMap groupByField = new WMap(aggregations.getMap("group_by_" + field));
     List buckets = groupByField.getList("buckets");
     if(buckets == null) {
-      if(debug) System.out.println(logprefix + "group(" + collection + "," + mapFilter + ",\"" + field + "\",\"" + groupFunction + "\") -> 0 documents (buckets=null)");
+      if(debug) log.println(logprefix + "group(" + collection + "," + mapFilter + ",\"" + field + "\",\"" + groupFunction + "\") -> 0 documents (buckets=null)");
       return new ArrayList<Map<String, Object>> (0);
     }
     
@@ -1197,7 +1205,7 @@ class NoSQLElasticsearch implements INoSQLDB
         listResult.add(mapRecord);
       }
     }
-    if(debug) System.out.println(logprefix + "group(" + collection + "," + mapFilter + ",\"" + field + "\",\"" + groupFunction + "\") -> " + listResult.size() + " documents");
+    if(debug) log.println(logprefix + "group(" + collection + "," + mapFilter + ",\"" + field + "\",\"" + groupFunction + "\") -> " + listResult.size() + " documents");
     return listResult;
   }
   
@@ -1206,7 +1214,7 @@ class NoSQLElasticsearch implements INoSQLDB
   Map<String, Object> read(String collection, String id)
     throws Exception
   {
-    if(debug) System.out.println(logprefix + "read(" + collection + "," + id + ")...");
+    if(debug) log.println(logprefix + "read(" + collection + "," + id + ")...");
     
     String url  = getURL(collection, id);
     
@@ -1214,12 +1222,12 @@ class NoSQLElasticsearch implements INoSQLDB
     
     Map mapSource = resGET.getMap("_source");
     if(mapSource == null) {
-      if(debug) System.out.println(logprefix + "read(" + collection + "," + id + ") -> null");
+      if(debug) log.println(logprefix + "read(" + collection + "," + id + ") -> null");
       return null;
     }
     
     mapSource.put("_id", id);
-    if(debug) System.out.println(logprefix + "read(" + collection + "," + id + ") -> {" + mapSource.size() + "}");
+    if(debug) log.println(logprefix + "read(" + collection + "," + id + ") -> {" + mapSource.size() + "}");
     return mapSource;
   }
   
@@ -1228,7 +1236,7 @@ class NoSQLElasticsearch implements INoSQLDB
   int count(String collection, Map<String, ?> mapFilter)
     throws Exception
   {
-    if(debug) System.out.println(logprefix + "count(" + collection + "," + mapFilter + ")...");
+    if(debug) log.println(logprefix + "count(" + collection + "," + mapFilter + ")...");
     
     String url = getSearchURL(collection, mapFilter, "search_type=count");
     
@@ -1247,7 +1255,7 @@ class NoSQLElasticsearch implements INoSQLDB
     WMap hits = new WMap(resGET.getMap("hits"));
     int result = hits.getInt("total");
     
-    if(debug) System.out.println(logprefix + "count(" + collection + "," + mapFilter + ") -> " + result);
+    if(debug) log.println(logprefix + "count(" + collection + "," + mapFilter + ") -> " + result);
     return result;
   }
   
@@ -1256,9 +1264,9 @@ class NoSQLElasticsearch implements INoSQLDB
   boolean createIndex(String collection, String field, int type)
     throws Exception
   {
-    if(debug) System.out.println(logprefix + "createIndex(" + collection + "," + field + "," + type + ")...");
+    if(debug) log.println(logprefix + "createIndex(" + collection + "," + field + "," + type + ")...");
     boolean result = true;
-    if(debug) System.out.println(logprefix + "createIndex(" + collection + "," + field + "," + type + ") -> " + result);
+    if(debug) log.println(logprefix + "createIndex(" + collection + "," + field + "," + type + ") -> " + result);
     return result;
   }
   
@@ -1267,9 +1275,9 @@ class NoSQLElasticsearch implements INoSQLDB
   List<Map<String, Object>> listIndexes(String collection) 
     throws Exception
   {
-    if(debug) System.out.println(logprefix + "listIndexes(" + collection + ")...");
+    if(debug) log.println(logprefix + "listIndexes(" + collection + ")...");
     List<Map<String, Object>> listResult = new ArrayList<Map<String, Object>>();
-    if(debug) System.out.println(logprefix + "listIndexes(" + collection + ") -> " + listResult);
+    if(debug) log.println(logprefix + "listIndexes(" + collection + ") -> " + listResult);
     return listResult;
   }
   
@@ -1288,10 +1296,10 @@ class NoSQLElasticsearch implements INoSQLDB
   {
     if(debug) {
       if(content == null) {
-        System.out.println(logprefix + "writeFile(" + filename + ",null," + mapMetadata + "," + mapAttributes + ")...");
+        log.println(logprefix + "writeFile(" + filename + ",null," + mapMetadata + "," + mapAttributes + ")...");
       }
       else {
-        System.out.println(logprefix + "writeFile(" + filename + ",byte[" + content.length + "]," + mapMetadata + "," + mapAttributes + ")...");
+        log.println(logprefix + "writeFile(" + filename + ",byte[" + content.length + "]," + mapMetadata + "," + mapAttributes + ")...");
       }
     }
     
@@ -1311,10 +1319,10 @@ class NoSQLElasticsearch implements INoSQLDB
     String id = insert("files", mapDocument, false);
     if(debug) {
       if(content == null) {
-        System.out.println(logprefix + "writeFile(" + filename + ",null," + mapMetadata + "," + mapAttributes + ") -> " + id);
+        log.println(logprefix + "writeFile(" + filename + ",null," + mapMetadata + "," + mapAttributes + ") -> " + id);
       }
       else {
-        System.out.println(logprefix + "writeFile(" + filename + ",byte[" + content.length + "]," + mapMetadata + "," + mapAttributes + ") -> " + id);
+        log.println(logprefix + "writeFile(" + filename + ",byte[" + content.length + "]," + mapMetadata + "," + mapAttributes + ") -> " + id);
       }
     }
     return id;
@@ -1325,7 +1333,7 @@ class NoSQLElasticsearch implements INoSQLDB
   List<Map<String, Object>> findFiles(String filename, Map<String, ?> mapFilter)
     throws Exception
   {
-    if(debug) System.out.println(logprefix + "findFiles(" + filename + "," + mapFilter + ")...");
+    if(debug) log.println(logprefix + "findFiles(" + filename + "," + mapFilter + ")...");
     
     Map<String, Object> mapQuery = new HashMap<String, Object> ();
     if(mapFilter != null) {
@@ -1337,11 +1345,11 @@ class NoSQLElasticsearch implements INoSQLDB
     
     List<Map<String, Object>> listResult = find("files", mapQuery, FILE_NAME + "," + FILE_LENGTH + "," + FILE_DATE_UPLOAD);
     if(listResult == null) {
-      if(debug) System.out.println(logprefix + "findFiles(" + filename + "," + mapFilter + ") -> null");
+      if(debug) log.println(logprefix + "findFiles(" + filename + "," + mapFilter + ") -> null");
       return null;
     }
     
-    if(debug) System.out.println(logprefix + "findFiles(" + filename + "," + mapFilter + ") -> " + listResult.size() + " files");
+    if(debug) log.println(logprefix + "findFiles(" + filename + "," + mapFilter + ") -> " + listResult.size() + " files");
     return listResult;
   }
   
@@ -1350,22 +1358,22 @@ class NoSQLElasticsearch implements INoSQLDB
   Map<String, Object> readFile(String filename)
     throws Exception
   {
-    if(debug) System.out.println(logprefix + "readFile(" + filename + ")...");
+    if(debug) log.println(logprefix + "readFile(" + filename + ")...");
     
     Map mapFilter = new HashMap(1);
     mapFilter.put(FILE_NAME, filename);
     
     List<Map<String, Object>> listFindResult = find("files", mapFilter, "*");
     if(listFindResult == null) {
-      if(debug) System.out.println(logprefix + "readFile(" + filename + ") -> null (listFindResult=null)");
+      if(debug) log.println(logprefix + "readFile(" + filename + ") -> null (listFindResult=null)");
       return null;
     }
     if(listFindResult.size() == 0) {
-      if(debug) System.out.println(logprefix + "readFile(" + filename + ") -> null (listFindResult.size()=0)");
+      if(debug) log.println(logprefix + "readFile(" + filename + ") -> null (listFindResult.size()=0)");
       return null;
     }
     Map<String, Object> map0 = (Map) listFindResult.get(0);
-    if(debug) System.out.println(logprefix + "readFile(" + filename + ") -> {" + map0.size() + "}");
+    if(debug) log.println(logprefix + "readFile(" + filename + ") -> {" + map0.size() + "}");
     return map0;
   }
   
@@ -1374,14 +1382,14 @@ class NoSQLElasticsearch implements INoSQLDB
   boolean removeFile(String filename)
     throws Exception
   {
-    if(debug) System.out.println(logprefix + "removeFile(" + filename + ")...");
+    if(debug) log.println(logprefix + "removeFile(" + filename + ")...");
     
     Map mapFilter = new HashMap(1);
     mapFilter.put(FILE_NAME, filename);
     
     int count = delete("files", mapFilter);
     boolean result = count > 0;
-    if(debug) System.out.println(logprefix + "removeFile(" + filename + ") -> " + result);
+    if(debug) log.println(logprefix + "removeFile(" + filename + ") -> " + result);
     return result;
   }
   
@@ -1390,7 +1398,7 @@ class NoSQLElasticsearch implements INoSQLDB
   boolean renameFile(String filename, String newFilename)
     throws Exception
   {
-    if(debug) System.out.println(logprefix + "renameFile(" + filename + "," + newFilename + ")...");
+    if(debug) log.println(logprefix + "renameFile(" + filename + "," + newFilename + ")...");
     
     Map mapFilter = new HashMap(1);
     mapFilter.put(FILE_NAME, filename);
@@ -1400,7 +1408,7 @@ class NoSQLElasticsearch implements INoSQLDB
     
     int count = update("files", mapData, mapFilter);
     boolean result = count > 0;
-    if(debug) System.out.println(logprefix + "renameFile(" + filename + "," + newFilename + ") -> " + result);
+    if(debug) log.println(logprefix + "renameFile(" + filename + "," + newFilename + ") -> " + result);
     return result;
   }
   
@@ -1735,7 +1743,7 @@ class NoSQLElasticsearch implements INoSQLDB
       if(data != null) {
         sampleData = data.length() > 500 ? data.substring(0, 500).replace('\n', ' ') + "...}" : data.replace('\n', ' ');
       }
-      System.out.println(logprefix + "http(" + method + "," + dec(url) + "," + sampleData + ")...");
+      log.println(logprefix + "http(" + method + "," + dec(url) + "," + sampleData + ")...");
     }
     
     HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
@@ -1772,7 +1780,7 @@ class NoSQLElasticsearch implements INoSQLDB
       if(data != null) {
         sampleData = data.length() > 500 ? data.substring(0, 500).replace('\n', ' ') + "...}" : data.replace('\n', ' ');
       }
-      if(debug) System.out.println(logprefix + "http(" + method + "," + dec(url) + "," + sampleData + ") -> " + statusCode + " " + ex);
+      if(debug) log.println(logprefix + "http(" + method + "," + dec(url) + "," + sampleData + ") -> " + statusCode + " " + ex);
       throw ex;
     }
     finally {
@@ -1802,7 +1810,7 @@ class NoSQLElasticsearch implements INoSQLDB
         if(data != null) {
           sampleData = data.length() > 500 ? data.substring(0, 500).replace('\n', ' ') + "...}" : data.replace('\n', ' ');
         }
-        System.out.println(logprefix + "http(" + method + "," + dec(url) + "," + sampleData + ") -> " + statusCode + " Exception(" + result + ")");
+        log.println(logprefix + "http(" + method + "," + dec(url) + "," + sampleData + ") -> " + statusCode + " Exception(" + result + ")");
       }
       throw new Exception(result);
     }
@@ -1812,7 +1820,7 @@ class NoSQLElasticsearch implements INoSQLDB
         if(data != null) {
           sampleData = data.length() > 500 ? data.substring(0, 500).replace('\n', ' ') + "...}" : data.replace('\n', ' ');
         }
-        System.out.println(logprefix + "http(" + method + "," + dec(url) + "," + sampleData + ") -> " + statusCode + " Exception(Bad response: " + result + ")");
+        log.println(logprefix + "http(" + method + "," + dec(url) + "," + sampleData + ") -> " + statusCode + " Exception(Bad response: " + result + ")");
       }
       throw new Exception("Bad response: " + result);
     }
@@ -1824,7 +1832,7 @@ class NoSQLElasticsearch implements INoSQLDB
           sampleData = data.length() > 500 ? data.substring(0, 500).replace('\n', ' ') + "...}" : data.replace('\n', ' ');
         }
         String sample = result.length() > 500 ? result.substring(0, 500).replace('\n', ' ') + "...}" : result.replace('\n', ' ');
-        System.out.println(logprefix + "http(" + method + "," + dec(url) + "," + sampleData + ") -> " + statusCode + " " + sample);
+        log.println(logprefix + "http(" + method + "," + dec(url) + "," + sampleData + ") -> " + statusCode + " " + sample);
       }
       return  new WMap((Map) oResult);
     }
@@ -1833,7 +1841,7 @@ class NoSQLElasticsearch implements INoSQLDB
       if(data != null) {
         sampleData = data.length() > 500 ? data.substring(0, 500).replace('\n', ' ') + "...}" : data.replace('\n', ' ');
       }
-      System.out.println(logprefix + "http(" + method + "," + dec(url) + "," + sampleData + ") -> " + statusCode + " Exception(Bad response: " + result + ")");
+      log.println(logprefix + "http(" + method + "," + dec(url) + "," + sampleData + ") -> " + statusCode + " Exception(Bad response: " + result + ")");
     }
     throw new Exception("Bad response: " + result);
   }

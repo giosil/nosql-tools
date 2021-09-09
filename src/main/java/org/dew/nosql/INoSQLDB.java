@@ -1,5 +1,7 @@
 package org.dew.nosql;
 
+import java.io.PrintStream;
+
 import java.util.List;
 import java.util.Map;
 
@@ -17,6 +19,8 @@ interface INoSQLDB
   public void setDebug(boolean debug);
   
   public boolean isDebug();
+  
+  public void setLog(PrintStream log);
   
   public Map<String, Object> load(Map<String, Object> mapOptions) throws Exception;
   

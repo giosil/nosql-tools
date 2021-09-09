@@ -860,7 +860,20 @@ class NoSQLMongoDB2 implements INoSQLDB
       }
     }
     
-    BasicDBObject group = new BasicDBObject("_id", "$" + field);
+    String[] asFields = WUtil.toArrayOfString(field, true);
+    
+    BasicDBObject group = new BasicDBObject();
+    if(asFields.length == 1) {
+      group.put("_id", "$" + field);
+    }
+    else {
+      BasicDBObject group_id = new BasicDBObject();
+      for(int i = 0; i < asFields.length; i++) {
+        group_id.put(asFields[i], "$" + asFields[i]);
+      }
+      group.put("_id", group_id);
+    }
+    
     group.put(alias, new BasicDBObject(funct, argum));
     
     List<DBObject> pipeline = new ArrayList<DBObject>(2);
@@ -871,12 +884,21 @@ class NoSQLMongoDB2 implements INoSQLDB
     while(iterator.hasNext()) {
       DBObject dbObject = iterator.next();
       
+      Map mapRecord = dbObject.toMap();
+      
       Object _id = dbObject.get("_id");
       if(_id instanceof ObjectId) {
-        _id = ((ObjectId) _id).toHexString();
+        mapRecord.put(field, ((ObjectId) _id).toHexString());
       }
-      Map mapRecord = dbObject.toMap();
-      if(_id != null) mapRecord.put(field, _id);
+      else if(_id instanceof DBObject) {
+        for(int i = 0; i < asFields.length; i++) {
+          mapRecord.put(asFields[i], ((DBObject) _id).get(asFields[i]));
+        }
+      }
+      else {
+        mapRecord.put(field, _id);
+      }
+      
       Object value = dbObject.get(alias);
       if(value != null) mapRecord.put("value", value);
       

@@ -915,7 +915,20 @@ class NoSQLMongoDB3 implements INoSQLDB
         }
       }
       
-      Document group = new Document("_id", "$" + field);
+      String[] asFields = WUtil.toArrayOfString(field, true);
+      
+      Document group = new Document();
+      if(asFields.length == 1) {
+        group.put("_id", "$" + field);
+      }
+      else {
+        Document group_id = new Document();
+        for(int i = 0; i < asFields.length; i++) {
+          group_id.put(asFields[i], "$" + asFields[i]);
+        }
+        group.put("_id", group_id);
+      }
+      
       group.put(alias, new Document(funct, argum));
       
       List<Document> pipeline = new ArrayList<Document>(2);
@@ -927,11 +940,20 @@ class NoSQLMongoDB3 implements INoSQLDB
       mongoCursor = mongoCollection.aggregate(pipeline).iterator();
       while(mongoCursor.hasNext()) {
         Document document = mongoCursor.next();
+        
         Object _id = document.remove("_id");
         if(_id instanceof ObjectId) {
-          _id = ((ObjectId) _id).toHexString();
+          document.put(field, ((ObjectId) _id).toHexString());
         }
-        if(_id != null) document.put(field, _id);
+        else if(_id instanceof Document) {
+          for(int i = 0; i < asFields.length; i++) {
+            document.put(asFields[i], ((Document) _id).get(asFields[i]));
+          }
+        }
+        else {
+          document.put(field, _id);
+        }
+        
         Object value = document.remove(alias);
         if(value != null) document.put("value", value);
         listResult.add(document);

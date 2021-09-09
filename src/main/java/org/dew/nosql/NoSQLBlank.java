@@ -11,9 +11,9 @@ class NoSQLBlank implements INoSQLDB
 {
   protected static String logprefix = NoSQLBlank.class.getSimpleName() + ".";
   
+  protected int currentId = 1;
   protected boolean debug = false;
   protected PrintStream log = System.out;
-  protected int currentId = 1;
   
   public NoSQLBlank()
   {

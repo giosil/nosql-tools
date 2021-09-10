@@ -189,6 +189,13 @@ class NoSQLDataSource
   }
   
   public static 
+  INoSQLDB getDefaultNoSQLDB() 
+    throws Exception 
+  {
+    return getDefaultNoSQLDB(getDefaultDbName());
+  }
+  
+  public static 
   INoSQLDB getDefaultNoSQLDB(String dbName) 
     throws Exception 
   {

@@ -6,7 +6,8 @@ import java.io.InputStream;
 import java.io.PrintStream;
 
 import java.net.URL;
-
+import java.sql.Connection;
+import java.sql.DriverManager;
 import java.util.Calendar;
 import java.util.Properties;
 
@@ -57,7 +58,7 @@ class NoSQLDataSource
   
   public static
   String getProperty(String key, boolean isMandatory)
-    throws Exception
+      throws Exception
   {
     String sResult = config.getProperty(key);
     if(isMandatory) {
@@ -190,14 +191,14 @@ class NoSQLDataSource
   
   public static 
   INoSQLDB getDefaultNoSQLDB() 
-    throws Exception 
+      throws Exception 
   {
     return getDefaultNoSQLDB(getDefaultDbName());
   }
   
   public static 
   INoSQLDB getDefaultNoSQLDB(String dbName) 
-    throws Exception 
+      throws Exception 
   {
     String type = getProperty("nosqldb.type");
     if(type == null || type.length() < 3) {
@@ -241,6 +242,55 @@ class NoSQLDataSource
     
     noSQLDB.setDebug(DEBUG);
     return noSQLDB;
+  }
+  
+  public static
+  Connection getConnection()
+      throws Exception
+  {
+    String driver = config.getProperty("nosqldb.driver");
+    if(driver == null || driver.length() == 0) {
+      return null;
+    }
+    Class.forName(driver);
+    
+    String url = config.getProperty("nosqldb.uri");
+    if(url == null || url.length() == 0) {
+      url = getProperty("nosqldb.url");
+    }
+    if(url == null || url.length() == 0) {
+      return null;
+    }
+    
+    String user = config.getProperty("nosqldb.dbname");
+    String pass = config.getProperty("nosqldb.password");
+    if(pass == null || pass.length() == 0) {
+      pass = config.getProperty("nosqldb.dbauth");
+    }
+    
+    Connection conn = DriverManager.getConnection(url, user, pass);
+    conn.setAutoCommit(true);
+    
+    return conn;
+  }
+  
+  public static
+  Connection getConnection(String driver, String url, String user, String pass)
+      throws Exception
+  {
+    if(driver == null || driver.length() == 0) {
+      return null;
+    }
+    Class.forName(driver);
+    
+    if(url == null || url.length() == 0) {
+      return null;
+    }
+    
+    Connection conn = DriverManager.getConnection(url, user, pass);
+    conn.setAutoCommit(true);
+    
+    return conn;
   }
   
   public static

@@ -143,6 +143,18 @@ public class TestNOSQL extends TestCase {
   }
   
   protected static
+  Map<String,Object> map(String k0, Object v0, String k1, Object v1, String k2, Object v2, String k3, Object v3, String k4, Object v4)
+  {
+    Map<String,Object> mapResult = new HashMap<String, Object>();
+    if(k0 != null && k0.length() > 0) mapResult.put(k0, v0);
+    if(k1 != null && k1.length() > 0) mapResult.put(k1, v1);
+    if(k2 != null && k2.length() > 0) mapResult.put(k2, v2);
+    if(k3 != null && k3.length() > 0) mapResult.put(k3, v3);
+    if(k4 != null && k4.length() > 0) mapResult.put(k4, v4);
+    return mapResult;
+  }
+  
+  protected static
   void print(String title, List<?> list)
   {
     if(title != null) {

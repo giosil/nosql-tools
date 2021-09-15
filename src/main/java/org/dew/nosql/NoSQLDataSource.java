@@ -232,6 +232,9 @@ class NoSQLDataSource
     else if(type.startsWith("mon")) {
       noSQLDB = new NoSQLMongoDB3(dbName);
     } 
+    else if(type.startsWith("j")) {
+      noSQLDB = new NoSQLJdbc(dbName);
+    } 
     else {
       noSQLDB = new NoSQLMock(dbName);
     }

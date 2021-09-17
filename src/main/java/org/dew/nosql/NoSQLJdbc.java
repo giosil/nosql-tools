@@ -26,6 +26,7 @@ import javax.naming.InitialContext;
 
 import javax.sql.DataSource;
 
+import org.dew.nosql.json.JSON;
 import org.dew.nosql.util.WUtil;
 
 public 
@@ -34,6 +35,7 @@ class NoSQLJdbc implements INoSQLDB
   protected static String logprefix = NoSQLJdbc.class.getSimpleName() + ".";
   
   protected Connection _conn;
+  protected String jdbcPath = "jdbc/";
   protected String dataSource;
   
   public static Boolean _useSequece    = null;
@@ -41,14 +43,17 @@ class NoSQLJdbc implements INoSQLDB
   public static Object _trueValue      = new Integer(1);
   public static Object _falseValue     = new Integer(0);
   public static String _idFieldName    = "ID";
-  public static String _sequenceTab    = "SEQUENCES";
+  public static String _tablesPrefix   = "NOS_";
+  public static String _sequenceTab    = _tablesPrefix + "SEQUENCES";
   public static String _sequenceKey    = "NAME";
   public static String _sequenceVal    = "VALUE";
   public static String _sequencePrefix = "SEQ_";
   public static String _sequenceSuffix = "";
-  public static String _filesTable     = "FS_FILES";
+  public static String _filesTable     = _tablesPrefix + "FS_FILES";
   public static String _filesNameField = "NAME";
   public static String _filesContField = "CONTENT";
+  public static String _filesEmptyFunc = "EMPTY_BLOB()";
+  public static int    _queryTimeout   = 2 * 60;
   
   protected boolean debug = false;
   protected PrintStream log = System.out;
@@ -186,7 +191,12 @@ class NoSQLJdbc implements INoSQLDB
       while(rs.next()) {
         String tableName = rs.getString(3);
         if(tableName.indexOf('$') >= 0 || tableName.equals("PLAN_TABLE")) continue;
-        listResult.add(tableName);
+        if(_tablesPrefix != null && tableName.startsWith(_tablesPrefix)) {
+          tableName = tableName.substring(_tablesPrefix.length());
+        }
+        else {
+          listResult.add(tableName);
+        }
       }
     }
     catch(Exception ex) {
@@ -206,15 +216,16 @@ class NoSQLJdbc implements INoSQLDB
   public boolean drop(String collection) throws Exception {
     if(debug) log.println(logprefix + "drop(" + collection + ")...");
     boolean result = false;
-    
+    String table = _tablesPrefix != null ? _tablesPrefix + collection : collection;
     Connection conn = null;
     Statement stm = null;
     try {
       conn = getConnection();
       
       stm = conn.createStatement();
+      stm.setQueryTimeout(_queryTimeout);
       
-      result = stm.execute("DROP TABLE " + collection.toUpperCase());
+      result = stm.execute("DROP TABLE " + table.toUpperCase());
     }
     catch(Exception ex) {
       if(debug) log.println(logprefix + "drop(" + collection + "): " + ex);
@@ -233,8 +244,9 @@ class NoSQLJdbc implements INoSQLDB
   public String insert(String collection, Map<String, ?> mapData) throws Exception {
     if(debug) log.println(logprefix + "insert(" + collection + "," + mapData + ")...");
     String result = null;
+    String table = _tablesPrefix != null ? _tablesPrefix + collection : collection;
     try {
-      result = executeInsert(collection, mapData);
+      result = executeInsert(table, mapData);
     }
     catch(Exception ex) {
       if(debug) log.println(logprefix + "insert(" + collection + "," + mapData + "): " + ex);
@@ -248,8 +260,9 @@ class NoSQLJdbc implements INoSQLDB
   public String insert(String collection, Map<String, ?> mapData, boolean refresh) throws Exception {
     if(debug) log.println(logprefix + "insert(" + collection + "," + mapData + "," + refresh + ")...");
     String result = null;
+    String table = _tablesPrefix != null ? _tablesPrefix + collection : collection;
     try {
-      result = executeInsert(collection, mapData);
+      result = executeInsert(table, mapData);
     }
     catch(Exception ex) {
       if(debug) log.println(logprefix + "insert(" + collection + "," + mapData + "," + refresh + "): " + ex);
@@ -279,9 +292,10 @@ class NoSQLJdbc implements INoSQLDB
       return 0;
     }
     int result = 0;
+    String table = _tablesPrefix != null ? _tablesPrefix + collection : collection;
     try {
       for(int i = 0; i < listData.size(); i++) {
-        executeInsert(collection, listData.get(i));
+        executeInsert(table, listData.get(i));
         result++;
       }
     }
@@ -298,10 +312,11 @@ class NoSQLJdbc implements INoSQLDB
   public boolean replace(String collection, Map<String, ?> mapData, String id) throws Exception {
     if(debug) log.println(logprefix + "replace(" + collection + "," + mapData + ")...");
     boolean result = false;
+    String table = _tablesPrefix != null ? _tablesPrefix + collection : collection;
     try {
-      executeDelete(collection, id);
+      executeDelete(table, id);
       
-      executeInsert(collection, mapData);
+      executeInsert(table, mapData);
     }
     catch(Exception ex) {
       if(debug) log.println(logprefix + "replace(" + collection + "," + mapData + "): " + ex);
@@ -319,8 +334,9 @@ class NoSQLJdbc implements INoSQLDB
       return 0;
     }
     int result = 0;
+    String table = _tablesPrefix != null ? _tablesPrefix + collection : collection;
     try {
-      result = executeUpdate(collection, mapData, id);
+      result = executeUpdate(table, mapData, id);
     }
     catch(Exception ex) {
       if(debug) log.println(logprefix + "update(" + collection + "," + mapData + "," + id + "): " + result);
@@ -338,8 +354,9 @@ class NoSQLJdbc implements INoSQLDB
       return 0;
     }
     int result = 0;
+    String table = _tablesPrefix != null ? _tablesPrefix + collection : collection;
     try {
-      result = executeUpdate(collection, mapData, mapFilter);
+      result = executeUpdate(table, mapData, mapFilter);
     }
     catch(Exception ex) {
       if(debug) log.println(logprefix + "update(" + collection + "," + mapData + "," + mapFilter + "): " + ex);
@@ -353,15 +370,16 @@ class NoSQLJdbc implements INoSQLDB
   public String upsert(String collection, Map<String, ?> mapData, Map<String, ?> mapFilter) throws Exception {
     if(debug) log.println(logprefix + "upsert(" + collection + "," + mapData + "," + mapFilter + ")...");
     String result = null;
+    String table = _tablesPrefix != null ? _tablesPrefix + collection : collection;
     try {
-      int upd = executeUpdate(collection, mapData, mapFilter);
+      int upd = executeUpdate(table, mapData, mapFilter);
       if(upd > 0) {
         if(_idFieldName != null && _idFieldName.length() > 0) {
           result = WUtil.toString(mapFilter.get(_idFieldName), null);
         }
       }
       else {
-        result = executeInsert(collection, mapData);
+        result = executeInsert(table, mapData);
       }
     }
     catch(Exception ex) {
@@ -376,8 +394,9 @@ class NoSQLJdbc implements INoSQLDB
   public int unset(String collection, String fields, String id) throws Exception {
     if(debug) log.println(logprefix + "unset(" + collection + "," + fields + "," + id + ")...");
     int result = 0;
+    String table = _tablesPrefix != null ? _tablesPrefix + collection : collection;
     try {
-      result = executeUnSet(collection, fields, id);
+      result = executeUnSet(table, fields, id);
     }
     catch(Exception ex) {
       if(debug) log.println(logprefix + "unset(" + collection + "," + fields + "," + id + "): " + ex);
@@ -391,8 +410,9 @@ class NoSQLJdbc implements INoSQLDB
   public int inc(String collection, String id, String field, Number value) throws Exception {
     if(debug) log.println(logprefix + "inc(" + collection + "," + id + "," + field + "," + value + ")...");
     int result = 0;
+    String table = _tablesPrefix != null ? _tablesPrefix + collection : collection;
     try {
-      result = executeInc(collection, id, field, value, null, null);
+      result = executeInc(table, id, field, value, null, null);
     }
     catch (Exception ex) {
       if(debug) log.println(logprefix + "inc(" + collection + "," + id + "," + field + "," + value + "): " + ex);
@@ -406,8 +426,9 @@ class NoSQLJdbc implements INoSQLDB
   public int inc(String collection, String id, String field1, Number value1, String field2, Number value2) throws Exception {
     if(debug) log.println(logprefix + "inc(" + collection + "," + id + "," + field1 + "," + value1 + "," + field2 + "," + value2 + ")...");
     int result = 0;
+    String table = _tablesPrefix != null ? _tablesPrefix + collection : collection;
     try {
-      result = executeInc(collection, id, field1, value1, field2, value2);
+      result = executeInc(table, id, field1, value1, field2, value2);
     }
     catch (Exception ex) {
       if(debug) log.println(logprefix + "inc(" + collection + "," + id + "," + field1 + "," + value1 + "," + field2 + "," + value2 + "): " + ex);
@@ -421,8 +442,9 @@ class NoSQLJdbc implements INoSQLDB
   public int inc(String collection, Map<String, ?> mapFilter, String field, Number value) throws Exception {
     if(debug) log.println(logprefix + "inc(" + collection + "," + mapFilter + "," + field + "," + value + ")...");
     int result = 0;
+    String table = _tablesPrefix != null ? _tablesPrefix + collection : collection;
     try {
-      result = executeInc(collection, mapFilter, field, value, null, null);
+      result = executeInc(table, mapFilter, field, value, null, null);
     }
     catch (Exception ex) {
       if(debug) log.println(logprefix + "inc(" + collection + "," + mapFilter + "," + field + "," + value + "): " + ex);
@@ -436,8 +458,9 @@ class NoSQLJdbc implements INoSQLDB
   public int inc(String collection, Map<String, ?> mapFilter, String field1, Number value1, String field2, Number value2) throws Exception {
     if(debug) log.println(logprefix + "inc(" + collection + "," + mapFilter + "," + field1 + "," + value1 + "," + field2 + "," + value2 + ")...");
     int result = 0;
+    String table = _tablesPrefix != null ? _tablesPrefix + collection : collection;
     try {
-      result = executeInc(collection, mapFilter, field1, value1, field2, value2);
+      result = executeInc(table, mapFilter, field1, value1, field2, value2);
     }
     catch (Exception ex) {
       if(debug) log.println(logprefix + "inc(" + collection + "," + mapFilter + "," + field1 + "," + value1 + "," + field2 + "," + value2 + "): " + ex);
@@ -455,8 +478,9 @@ class NoSQLJdbc implements INoSQLDB
       return -1;
     }
     int result = 0;
+    String table = _tablesPrefix != null ? _tablesPrefix + collection : collection;
     try {
-      result = executeDelete(collection, id);
+      result = executeDelete(table, id);
     }
     catch(Exception ex) {
       if(debug) log.println(logprefix + "delete(" + collection + "," + id + "): " + ex);
@@ -474,8 +498,9 @@ class NoSQLJdbc implements INoSQLDB
       return -1;
     }
     int result = 0;
+    String table = _tablesPrefix != null ? _tablesPrefix + collection : collection;
     try {
-      result = executeDelete(collection, mapFilter);
+      result = executeDelete(table, mapFilter);
     }
     catch(Exception ex) {
       if(debug) log.println(logprefix + "delete(" + collection + "," + mapFilter + "): " + ex);
@@ -497,7 +522,9 @@ class NoSQLJdbc implements INoSQLDB
       }
     }
     
-    String sSQL = "SELECT " + fields.toUpperCase() + " FROM " + collection.toUpperCase();
+    String table = _tablesPrefix != null ? _tablesPrefix + collection : collection;
+    
+    String sSQL = "SELECT " + fields.toUpperCase() + " FROM " + table.toUpperCase();
     String where = buildWhere(mapFilter);
     if(where != null && where.length() > 0) {
       sSQL += " WHERE " + where;
@@ -510,6 +537,7 @@ class NoSQLJdbc implements INoSQLDB
       conn = getConnection();
       
       stm = conn.createStatement();
+      stm.setQueryTimeout(_queryTimeout);
       
       if(debug) log.println(logprefix + "#  " + sSQL);
       rs = stm.executeQuery(sSQL);
@@ -542,7 +570,9 @@ class NoSQLJdbc implements INoSQLDB
       }
     }
     
-    String sSQL = "SELECT " + fields.toUpperCase() + " FROM " + collection.toUpperCase();
+    String table = _tablesPrefix != null ? _tablesPrefix + collection : collection;
+    
+    String sSQL = "SELECT " + fields.toUpperCase() + " FROM " + table.toUpperCase();
     String where = buildWhere(mapFilter);
     if(where != null && where.length() > 0) {
       sSQL += " WHERE " + where;
@@ -558,6 +588,7 @@ class NoSQLJdbc implements INoSQLDB
       conn = getConnection();
       
       stm = conn.createStatement();
+      stm.setQueryTimeout(_queryTimeout);
       
       if(debug) log.println(logprefix + "#  " + sSQL);
       rs = stm.executeQuery(sSQL);
@@ -590,7 +621,9 @@ class NoSQLJdbc implements INoSQLDB
       }
     }
     
-    String sSQL = "SELECT " + fields.toUpperCase() + " FROM " + collection.toUpperCase();
+    String table = _tablesPrefix != null ? _tablesPrefix + collection : collection;
+    
+    String sSQL = "SELECT " + fields.toUpperCase() + " FROM " + table.toUpperCase();
     String where = buildWhere(mapFilter);
     if(where != null && where.length() > 0) {
       sSQL += " WHERE " + where;
@@ -606,6 +639,7 @@ class NoSQLJdbc implements INoSQLDB
       conn = getConnection();
       
       stm = conn.createStatement();
+      stm.setQueryTimeout(_queryTimeout);
       
       if(debug) log.println(logprefix + "#  " + sSQL);
       rs = stm.executeQuery(sSQL);
@@ -633,7 +667,9 @@ class NoSQLJdbc implements INoSQLDB
     
     if(text == null) text = "";
     
-    String sSQL = "SELECT * FROM " + collection.toUpperCase();
+    String table = _tablesPrefix != null ? _tablesPrefix + collection : collection;
+    
+    String sSQL = "SELECT * FROM " + table.toUpperCase();
     if(field != null && field.length() > 0) {
       sSQL += " WHERE " + field.toUpperCase() + " LIKE '%" + text.replace("'", "''").replace(" ", "%") + "%'";
     }
@@ -645,6 +681,7 @@ class NoSQLJdbc implements INoSQLDB
       conn = getConnection();
       
       stm = conn.createStatement();
+      stm.setQueryTimeout(_queryTimeout);
       
       if(debug) log.println(logprefix + "#  " + sSQL);
       rs = stm.executeQuery(sSQL);
@@ -686,7 +723,9 @@ class NoSQLJdbc implements INoSQLDB
       }
     }
     
-    String sSQL = "SELECT " + field.toUpperCase() + "," + groupFunction.toUpperCase() + " FROM " + collection.toUpperCase();
+    String table = _tablesPrefix != null ? _tablesPrefix + collection : collection;
+    
+    String sSQL = "SELECT " + field.toUpperCase() + "," + groupFunction.toUpperCase() + " FROM " + table.toUpperCase();
     String where = buildWhere(mapFilter);
     if(where != null && where.length() > 0) {
       sSQL += " WHERE " + where;
@@ -700,6 +739,7 @@ class NoSQLJdbc implements INoSQLDB
       conn = getConnection();
       
       stm = conn.createStatement();
+      stm.setQueryTimeout(_queryTimeout);
       
       if(debug) log.println(logprefix + "#  " + sSQL);
       rs = stm.executeQuery(sSQL);
@@ -729,7 +769,9 @@ class NoSQLJdbc implements INoSQLDB
       return mapResult;
     }
     
-    String sSQL = "SELECT * FROM " + collection.toUpperCase();
+    String table = _tablesPrefix != null ? _tablesPrefix + collection : collection;
+    
+    String sSQL = "SELECT * FROM " + table.toUpperCase();
     sSQL += " WHERE " + _idFieldName + "=";
     
     Object oId = getIdValue(id);
@@ -741,6 +783,7 @@ class NoSQLJdbc implements INoSQLDB
       conn = getConnection();
       
       pstm = conn.prepareStatement(sSQL + "?");
+      pstm.setQueryTimeout(_queryTimeout);
       if(oId instanceof Number) {
         pstm.setInt(1, ((Number) oId).intValue());
       }
@@ -773,7 +816,9 @@ class NoSQLJdbc implements INoSQLDB
     if(debug) log.println(logprefix + "count(" + collection + "," + mapFilter + ")...");
     int result = 0;
     
-    String sSQL = "SELECT COUNT(*) FROM " + collection.toUpperCase();
+    String table = _tablesPrefix != null ? _tablesPrefix + collection : collection;
+    
+    String sSQL = "SELECT COUNT(*) FROM " + table;
     String where = buildWhere(mapFilter);
     if(where != null && where.length() > 0) {
       sSQL += " WHERE " + where;
@@ -786,6 +831,7 @@ class NoSQLJdbc implements INoSQLDB
       conn = getConnection();
       
       stm = conn.createStatement();
+      stm.setQueryTimeout(_queryTimeout);
       
       if(debug) log.println(logprefix + "#  " + sSQL);
       rs = stm.executeQuery(sSQL);
@@ -812,7 +858,9 @@ class NoSQLJdbc implements INoSQLDB
   boolean createIndex(String collection, String field, int type) throws Exception {
     if(debug) log.println(logprefix + "createIndex(" + collection + "," + field + "," + type + ")...");
     
-    String sSQL = "CREATE INDEX IDX" + System.currentTimeMillis() + " ON " + collection.toUpperCase() + "(" + field.toUpperCase() + ")";
+    String table = _tablesPrefix != null ? _tablesPrefix + collection : collection;
+    
+    String sSQL = "CREATE INDEX IDX" + System.currentTimeMillis() + " ON " + table.toUpperCase() + "(" + field.toUpperCase() + ")";
     
     boolean result = true;
     Connection conn = null;
@@ -821,6 +869,7 @@ class NoSQLJdbc implements INoSQLDB
       conn = getConnection();
       
       stm = conn.createStatement();
+      stm.setQueryTimeout(_queryTimeout);
       
       if(debug) log.println(logprefix + "#  " + sSQL);
       stm.execute(sSQL);
@@ -843,13 +892,15 @@ class NoSQLJdbc implements INoSQLDB
     if(debug) log.println(logprefix + "listIndexes(" + collection + ")...");
     List<Map<String, Object>> listResult = null;
     
+    String table = _tablesPrefix != null ? _tablesPrefix + collection : collection;
+    
     Connection conn = null;
     ResultSet rs = null;
     try {
       conn = getConnection();
       
       DatabaseMetaData dbmd = conn.getMetaData();
-      rs = dbmd.getIndexInfo(null, null, collection, true, true);
+      rs = dbmd.getIndexInfo(null, null, table, true, true);
       
       listResult = toList(rs, 0, 0);
     }
@@ -899,6 +950,8 @@ class NoSQLJdbc implements INoSQLDB
       conn = getConnection();
       
       pstm = conn.prepareStatement(sSQL + "(?)");
+      pstm.setQueryTimeout(_queryTimeout);
+      
       pstm.setString(1, filename);
       if(debug) log.println(logprefix + "#  " + sSQL + "(" + toSQL(filename) + ")");
       pstm.executeUpdate();
@@ -962,6 +1015,7 @@ class NoSQLJdbc implements INoSQLDB
       conn = getConnection();
       
       stm = conn.createStatement();
+      stm.setQueryTimeout(_queryTimeout);
       
       if(debug) log.println(logprefix + "#  " + sSQL);
       rs = stm.executeQuery(sSQL);
@@ -1000,6 +1054,7 @@ class NoSQLJdbc implements INoSQLDB
       conn = getConnection();
       
       pstm = conn.prepareStatement(sSQL + "?");
+      pstm.setQueryTimeout(_queryTimeout);
       pstm.setString(1, filename);
       
       if(debug) log.println(logprefix + "#  " + sSQL + toSQL(filename));
@@ -1042,6 +1097,7 @@ class NoSQLJdbc implements INoSQLDB
       conn = getConnection();
       
       pstm = conn.prepareStatement(sSQL + "?");
+      pstm.setQueryTimeout(_queryTimeout);
       pstm.setString(1, filename);
       
       if(debug) log.println(logprefix + "#  " + sSQL + toSQL(filename));
@@ -1080,6 +1136,7 @@ class NoSQLJdbc implements INoSQLDB
       conn = getConnection();
       
       pstm = conn.prepareStatement(sSQL_S + "?" + sSQL_W + "?");
+      pstm.setQueryTimeout(_queryTimeout);
       pstm.setString(1, newFilename);
       pstm.setString(2, filename);
       
@@ -1100,7 +1157,7 @@ class NoSQLJdbc implements INoSQLDB
   }
   
   protected
-  String executeInsert(String collection, Map<String, ?> mapValues)
+  String executeInsert(String table, Map<String, ?> mapValues)
     throws Exception
   {
     if(mapValues == null || mapValues.isEmpty()) {
@@ -1126,12 +1183,12 @@ class NoSQLJdbc implements INoSQLDB
         }
         else {
           listFields.add(0, _idFieldName);
-          nextValResult = nextVal(conn, _sequencePrefix + collection.toUpperCase() + _sequenceSuffix);
+          nextValResult = nextVal(conn, _sequencePrefix + table.toUpperCase() + _sequenceSuffix);
           id = nextValResult;
         }
       }
       
-      String sSQL_I = "INSERT INTO " + collection.toUpperCase();
+      String sSQL_I = "INSERT INTO " + table.toUpperCase();
       String sFields = "";
       for(int i = 0; i < listFields.size(); i++) {
         sFields += "," + listFields.get(i).toUpperCase();
@@ -1143,6 +1200,7 @@ class NoSQLJdbc implements INoSQLDB
       for(int i = 0; i < listFields.size(); i++) sParams += ",?";
       
       pstm = conn.prepareStatement(sSQL_I + " VALUES (" + sParams.substring(1) + ")");
+      pstm.setQueryTimeout(_queryTimeout);
       for(int i = 0; i < listFields.size(); i++) {
         String field = listFields.get(i);
         
@@ -1196,7 +1254,7 @@ class NoSQLJdbc implements INoSQLDB
           pstm.setDate(i + 1, new java.sql.Date(((java.util.Date) parameter).getTime()));
         }
         else {
-          pstm.setObject(i + 1, parameter);
+          pstm.setString(i + 1, JSON.stringify(parameter));
         }
       }
       
@@ -1211,10 +1269,14 @@ class NoSQLJdbc implements INoSQLDB
   }
   
   protected
-  int executeUpdate(String collection, Map<String, ?> mapValues, String id)
+  int executeUpdate(String table, Map<String, ?> mapValues, String id)
     throws Exception
   {
     if(mapValues == null || mapValues.isEmpty()) {
+      return 0;
+    }
+    if(_idFieldName == null || _idFieldName.length() == 0) {
+      if(debug) log.println(logprefix + "executeUpdate(" + table + "," + mapValues + "," + id + ") -> 0 (_idFieldName=" + _idFieldName + ")");
       return 0;
     }
     
@@ -1239,7 +1301,7 @@ class NoSQLJdbc implements INoSQLDB
     
     int size = listFields.size();
     
-    String sSQL_U = "UPDATE " + collection.toUpperCase() + " SET ";
+    String sSQL_U = "UPDATE " + table.toUpperCase() + " SET ";
     
     String sParams = "";
     String sValues = "";
@@ -1256,6 +1318,7 @@ class NoSQLJdbc implements INoSQLDB
       conn = getConnection();
       
       pstm = conn.prepareStatement(sSQL_U + sParams.substring(1) + sSQL_W + "?");
+      pstm.setQueryTimeout(_queryTimeout);
       for(int i = 0; i < size; i++) {
         String field = listFields.get(i);
         
@@ -1309,7 +1372,7 @@ class NoSQLJdbc implements INoSQLDB
           pstm.setDate(i + 1, new java.sql.Date(((java.util.Date) parameter).getTime()));
         }
         else {
-          pstm.setObject(i + 1, parameter);
+          pstm.setString(i + 1, JSON.stringify(parameter));
         }
       }
       
@@ -1324,7 +1387,7 @@ class NoSQLJdbc implements INoSQLDB
   }
   
   protected
-  int executeUpdate(String collection, Map<String, ?> mapValues, Map<String, ?> mapFilter)
+  int executeUpdate(String table, Map<String, ?> mapValues, Map<String, ?> mapFilter)
     throws Exception
   {
     if(mapValues == null || mapValues.isEmpty()) {
@@ -1340,7 +1403,7 @@ class NoSQLJdbc implements INoSQLDB
     
     int size = listFields.size();
     
-    String sSQL = "UPDATE " + collection.toUpperCase() + " SET ";
+    String sSQL = "UPDATE " + table.toUpperCase() + " SET ";
     String sFields = "";
     for(int i = 0; i < size - 1; i++) {
       sFields += "," + listFields.get(i).toUpperCase() + "=?";
@@ -1357,6 +1420,7 @@ class NoSQLJdbc implements INoSQLDB
       conn = getConnection();
       
       pstm = conn.prepareStatement(sSQL);
+      pstm.setQueryTimeout(_queryTimeout);
       for(int i = 0; i < size; i++) {
         String field = listFields.get(i);
         
@@ -1402,7 +1466,7 @@ class NoSQLJdbc implements INoSQLDB
           pstm.setDate(i + 1, new java.sql.Date(((java.util.Date) parameter).getTime()));
         }
         else {
-          pstm.setObject(i + 1, parameter);
+          pstm.setString(i + 1, JSON.stringify(parameter));
         }
       }
       
@@ -1417,20 +1481,20 @@ class NoSQLJdbc implements INoSQLDB
   }
   
   protected
-  int executeDelete(String collection, String id)
+  int executeDelete(String table, String id)
     throws Exception
   {
     if(id == null || id.length() == 0) {
       return 0;
     }
     if(_idFieldName == null || _idFieldName.length() == 0) {
-      if(debug) log.println(logprefix + "executeDelete(" + collection + "," + id + ") -> 0 (_idFieldName=" + _idFieldName + ")");
+      if(debug) log.println(logprefix + "executeDelete(" + table + "," + id + ") -> 0 (_idFieldName=" + _idFieldName + ")");
       return 0;
     }
     
     Object oId = getIdValue(id);
     
-    String sSQL = "DELETE FROM " + collection.toUpperCase() + " WHERE " + _idFieldName + "=";
+    String sSQL = "DELETE FROM " + table.toUpperCase() + " WHERE " + _idFieldName + "=";
     
     int result = 0;
     Connection conn = null;
@@ -1439,6 +1503,7 @@ class NoSQLJdbc implements INoSQLDB
       conn = getConnection();
       
       pstm = conn.prepareStatement(sSQL + "?");
+      pstm.setQueryTimeout(_queryTimeout);
       if(oId instanceof Number) {
         pstm.setInt(1, ((Number) oId).intValue());
       }
@@ -1457,12 +1522,12 @@ class NoSQLJdbc implements INoSQLDB
   }
   
   protected
-  int executeDelete(String collection, Map<String, ?> mapFilter)
+  int executeDelete(String table, Map<String, ?> mapFilter)
     throws Exception
   {
     String where = buildWhere(mapFilter);
     
-    String sSQL = "DELETE FROM " + collection.toUpperCase();
+    String sSQL = "DELETE FROM " + table.toUpperCase();
     if(where != null && where.length() > 0) {
       sSQL += " WHERE " + where;
     }
@@ -1473,6 +1538,7 @@ class NoSQLJdbc implements INoSQLDB
       conn = getConnection();
       
       pstm = conn.prepareStatement(sSQL);
+      pstm.setQueryTimeout(_queryTimeout);
       
       if(debug) log.println(logprefix + "#  " + sSQL);
       result = pstm.executeUpdate();
@@ -1485,22 +1551,22 @@ class NoSQLJdbc implements INoSQLDB
   }
   
   protected
-  int executeUnSet(String collection, String fields, String id)
+  int executeUnSet(String table, String fields, String id)
     throws Exception
   {
     if(fields == null || fields.length() == 0) {
-      if(debug) log.println(logprefix + "executeUnSet(" + collection + "," + fields + "," + id + ") -> 0 (fields=" + fields + ")");
+      if(debug) log.println(logprefix + "executeUnSet(" + table + "," + fields + "," + id + ") -> 0 (fields=" + fields + ")");
       return 0;
     }
     
     if(_idFieldName == null && _idFieldName.length() == 0) {
-      if(debug) log.println(logprefix + "executeUnSet(" + collection + "," + fields + "," + id + ") -> 0 (_idFieldName=" + _idFieldName + ")");
+      if(debug) log.println(logprefix + "executeUnSet(" + table + "," + fields + "," + id + ") -> 0 (_idFieldName=" + _idFieldName + ")");
       return 0;
     }
     
     String[] asFields = WUtil.toArrayOfString(fields, false);
     
-    String sSQL = "UPDATE " + collection.toUpperCase() + " SET ";
+    String sSQL = "UPDATE " + table.toUpperCase() + " SET ";
     String sFields = "";
     for(int i = 0; i < asFields.length; i++) {
       sFields += "," + asFields[i].toUpperCase() + "=NULL";
@@ -1517,6 +1583,7 @@ class NoSQLJdbc implements INoSQLDB
       conn = getConnection();
       
       pstm = conn.prepareStatement(sSQL + "?");
+      pstm.setQueryTimeout(_queryTimeout);
       
       if(oId instanceof Number) {
         pstm.setInt(1, ((Number) oId).intValue());
@@ -1536,20 +1603,20 @@ class NoSQLJdbc implements INoSQLDB
   }
   
   protected
-  int executeInc(String collection, String id, String field1, Number value1, String field2, Number value2)
+  int executeInc(String table, String id, String field1, Number value1, String field2, Number value2)
     throws Exception
   {
     if(field1 == null || field1.length() == 0) {
-      if(debug) log.println(logprefix + "executeInc(" + collection + "," + id + "," + field1 + "," + value1 + "," + field2 + "," + value2 + ") -> 0 (field1=" + field1 + ")");
+      if(debug) log.println(logprefix + "executeInc(" + table + "," + id + "," + field1 + "," + value1 + "," + field2 + "," + value2 + ") -> 0 (field1=" + field1 + ")");
       return 0;
     }
     
     if(_idFieldName == null && _idFieldName.length() == 0) {
-      if(debug) log.println(logprefix + "executeInc(" + collection + "," + id + "," + field1 + "," + value1 + "," + field2 + "," + value2 + ") -> 0 (_idFieldName=" + _idFieldName + ")");
+      if(debug) log.println(logprefix + "executeInc(" + table + "," + id + "," + field1 + "," + value1 + "," + field2 + "," + value2 + ") -> 0 (_idFieldName=" + _idFieldName + ")");
       return 0;
     }
     
-    String sSQL = "UPDATE " + collection.toUpperCase() + " SET ";
+    String sSQL = "UPDATE " + table.toUpperCase() + " SET ";
     sSQL += field1.toUpperCase() + "=" + field1.toUpperCase() + "+" + value1;
     if(field2 != null && field2.length() > 0) {
       sSQL += "," + field2.toUpperCase() + "=" + field2.toUpperCase() + "+" + value2;
@@ -1567,6 +1634,7 @@ class NoSQLJdbc implements INoSQLDB
       conn = getConnection();
       
       pstm = conn.prepareStatement(sSQL + "?");
+      pstm.setQueryTimeout(_queryTimeout);
       
       if(oId instanceof Number) {
         pstm.setInt(1, ((Number) oId).intValue());
@@ -1586,17 +1654,17 @@ class NoSQLJdbc implements INoSQLDB
   }
   
   protected
-  int executeInc(String collection, Map<String, ?> mapFilter, String field1, Number value1, String field2, Number value2)
+  int executeInc(String table, Map<String, ?> mapFilter, String field1, Number value1, String field2, Number value2)
     throws Exception
   {
     if(field1 == null || field1.length() == 0) {
-      if(debug) log.println(logprefix + "executeInc(" + collection + "," + mapFilter + "," + field1 + "," + value1 + "," + field2 + "," + value2 + ") -> 0 (field1=" + field1 + ")");
+      if(debug) log.println(logprefix + "executeInc(" + table + "," + mapFilter + "," + field1 + "," + value1 + "," + field2 + "," + value2 + ") -> 0 (field1=" + field1 + ")");
       return 0;
     }
     
     String where = buildWhere(mapFilter);
     
-    String sSQL = "UPDATE " + collection.toUpperCase() + " SET ";
+    String sSQL = "UPDATE " + table.toUpperCase() + " SET ";
     sSQL += field1.toUpperCase() + "=" + field1.toUpperCase() + "+" + value1;
     if(field2 != null && field2.length() > 0) {
       sSQL += "," + field2.toUpperCase() + "=" + field2.toUpperCase() + "+" + value2;
@@ -1612,6 +1680,7 @@ class NoSQLJdbc implements INoSQLDB
       conn = getConnection();
       
       pstm = conn.prepareStatement(sSQL);
+      pstm.setQueryTimeout(_queryTimeout);
       
       if(debug) log.println(logprefix + "#  " + sSQL);
       result = pstm.executeUpdate();
@@ -1725,8 +1794,12 @@ class NoSQLJdbc implements INoSQLDB
           value = "'" + booleanValue + "'";
         }
       }
-      else {
+      else if(valueTmp instanceof Number) {
         value = valueTmp.toString();
+      }
+      else {
+        String json = JSON.stringify(valueTmp);
+        value = "'" + json.replace("'", "''") + "'";
       }
       
       sbResult.append(key.toUpperCase());
@@ -1835,11 +1908,13 @@ class NoSQLJdbc implements INoSQLDB
       ResultSet rs = null;
       try {
         pstm = connection.prepareStatement("UPDATE " + _sequenceTab + " SET " + _sequenceVal + "=" + _sequenceVal + "+1 WHERE " + _sequenceKey + "=?");
+        pstm.setQueryTimeout(_queryTimeout);
         pstm.setString(1, sequenceName);
         int iRows = pstm.executeUpdate();
         pstm.close();
         if(iRows == 1) {
           pstm = connection.prepareStatement("SELECT " + _sequenceVal + " FROM " + _sequenceTab + " WHERE " + _sequenceKey+ "=?");
+          pstm.setQueryTimeout(_queryTimeout);
           pstm.setString(1, sequenceName);
           rs = pstm.executeQuery();
           if(rs.next()) iResult = rs.getInt(1);
@@ -1847,6 +1922,7 @@ class NoSQLJdbc implements INoSQLDB
         else {
           iResult = 1;
           pstm = connection.prepareStatement("INSERT INTO " + _sequenceTab + "(" + _sequenceKey + "," + _sequenceVal + ") VALUES(?,?)");
+          pstm.setQueryTimeout(_queryTimeout);
           pstm.setString(1, sequenceName);
           pstm.setInt(2, iResult);
           pstm.executeUpdate();
@@ -1903,10 +1979,11 @@ class NoSQLJdbc implements INoSQLDB
     throws Exception
   {
     int result = 0;
-    String sSQL = "UPDATE " + _filesTable + " SET " + _filesContField + "=EMPTY_BLOB() WHERE " + _filesNameField + "=?";
+    String sSQL = "UPDATE " + _filesTable + " SET " + _filesContField + "=" + _filesEmptyFunc + " WHERE " + _filesNameField + "=?";
     PreparedStatement pstm = null;
     try{
       pstm = connection.prepareStatement(sSQL);
+      pstm.setQueryTimeout(_queryTimeout);
       pstm.setString(1, filename);
       result = pstm.executeUpdate();
     }
@@ -1930,6 +2007,7 @@ class NoSQLJdbc implements INoSQLDB
     ResultSet rs = null;
     try{
       stm = connection.createStatement();
+      stm.setQueryTimeout(_queryTimeout);
       rs = stm.executeQuery(sSQL);
       if(rs.next()) {
         Blob blob = rs.getBlob(_filesContField);
@@ -1943,7 +2021,14 @@ class NoSQLJdbc implements INoSQLDB
       }
       
       if(boResult) {
-        stm.execute("COMMIT");
+        if(this._conn != null) {
+          try {
+            // Required with oracle driver 
+            this._conn.commit();
+          }
+          catch(Exception ex) {
+          }
+        }
       }
     }
     finally {
@@ -2217,9 +2302,43 @@ class NoSQLJdbc implements INoSQLDB
     
     Context ctx = new InitialContext();
     
-    DataSource ds = (DataSource) ctx.lookup(dataSource);
+    if(dataSource.indexOf('/') >= 0) {
+      DataSource ds = (DataSource) ctx.lookup(dataSource);
+      if(ds != null) return ds.getConnection();
+      throw new Exception("DataSource " + dataSource + " not available.");
+    }
     
-    return ds.getConnection();
+    try {
+      DataSource ds = (DataSource) ctx.lookup(jdbcPath + dataSource);
+      if(ds != null) return ds.getConnection();
+    }
+    catch(Exception ex) {}
+    jdbcPath = "java:/";
+    try {
+      DataSource ds = (DataSource) ctx.lookup(jdbcPath + dataSource);
+      if(ds != null) return ds.getConnection();
+    }
+    catch(Exception ex) {}
+    jdbcPath = "java:/jdbc/";
+    try {
+      DataSource ds = (DataSource) ctx.lookup(jdbcPath + dataSource);
+      if(ds != null) return ds.getConnection();
+    }
+    catch(Exception ex) {}
+    jdbcPath = "java:/comp/env/jdbc/";
+    try {
+      DataSource ds = (DataSource) ctx.lookup(jdbcPath + dataSource);
+      if(ds != null) return ds.getConnection();
+    }
+    catch(Exception ex) {}
+    jdbcPath = "jdbc/";
+    try {
+      DataSource ds = (DataSource) ctx.lookup(jdbcPath + dataSource);
+      if(ds != null) return ds.getConnection();
+    }
+    catch(Exception ex) {}
+    
+    throw new Exception("DataSource " + dataSource + " not available.");
   }
   
   protected

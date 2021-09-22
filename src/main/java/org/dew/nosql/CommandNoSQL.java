@@ -625,8 +625,17 @@ class CommandNoSQL
         else if(val instanceof Integer) {
           sb.append("NUMBER(10)");
         }
+        else if(val instanceof Long) {
+          sb.append("NUMBER(12)");
+        }
         else if(val instanceof Double) {
           sb.append("NUMBER(8,2)");
+        }
+        else if(val instanceof Float) {
+          sb.append("NUMBER(6,2)");
+        }
+        else if(val instanceof Boolean) {
+          sb.append("NUMBER(1)");
         }
         else if(val instanceof Date) {
           sb.append("DATE");

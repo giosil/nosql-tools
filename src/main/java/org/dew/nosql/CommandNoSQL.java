@@ -7,6 +7,7 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -14,7 +15,6 @@ import org.dew.nosql.json.JSON;
 
 import org.dew.nosql.util.WUtil;
 
-@SuppressWarnings({"rawtypes","unchecked"})
 public 
 class CommandNoSQL
 {
@@ -83,6 +83,7 @@ class CommandNoSQL
     System.out.println("bye           = exit from command sql");
     System.out.println("col           = list collections");
     System.out.println("ver           = print product version");
+    System.out.println("desc  <c>     = create script SQL of collection c");
     System.out.println("view  <c> {f} = view 20 records of collection c");
     System.out.println("exp   <c> {f} = export collection c");
     System.out.println("find  <c> {f} = find on collection c");
@@ -127,8 +128,7 @@ class CommandNoSQL
           printHelp();
           continue;
         }
-        else
-        if(sCommand.equalsIgnoreCase("l")) {
+        else if(sCommand.equalsIgnoreCase("l")) {
           if(sLast != null && sLast.length() > 0) {
             sCommand = sLast;
           }
@@ -137,8 +137,7 @@ class CommandNoSQL
             continue;
           }
         }
-        else
-        if(sCommand.startsWith("L ") || sCommand.startsWith("l ")) {
+        else if(sCommand.startsWith("L ") || sCommand.startsWith("l ")) {
           String sIdx = sCommand.substring(2).trim();
           int iIdx = 0;
           try { iIdx = Integer.parseInt(sIdx); } catch(Exception ex) {}
@@ -150,8 +149,7 @@ class CommandNoSQL
             continue;
           }
         }
-        else
-        if(sCommand.equalsIgnoreCase("lc")) {
+        else if(sCommand.equalsIgnoreCase("lc")) {
           if(listCommands != null && listCommands.size() > 0) {
             for(int i = 0; i < listCommands.size(); i++) {
               System.out.println(i + " " + listCommands.get(i));
@@ -159,9 +157,8 @@ class CommandNoSQL
           }
           continue;
         }
-        else
-        if(sCommand.equalsIgnoreCase("la")) {
-          List aliases = CommandAliases.getAliases();
+        else if(sCommand.equalsIgnoreCase("la")) {
+          List<String> aliases = CommandAliases.getAliases();
           if(aliases != null && aliases.size() > 0) {
             for(int i = 0; i < aliases.size(); i++) {
               System.out.println(i + " " + aliases.get(i));
@@ -204,20 +201,41 @@ class CommandNoSQL
         if(s3.equals("tab") || s3.equals("col")) {
           printCollections();
         }
-        else
-        if(s3.equals("ver") || s3.equals("inf")) {
+        else if(s3.equals("ver") || s3.equals("inf")) {
           printVersion();
         }
-        else
-        if(s3.equals("exp")) {
+        else if(s3.equals("des")) {
+          String sCollection = getCollection(sCommand);
+          if(sCollection == null || sCollection.length() == 0 || sCollection.equals("*")) {
+            try {
+              List<String> listCollections = noSQLDB.getCollections();
+              if(listCollections == null || listCollections.size() == 0) {
+                System.out.println("No collections found.");
+                ps.println("No collections found.");
+              }
+              else {
+                for(int i = 0; i < listCollections.size(); i++) {
+                  descCollection(listCollections.get(i));
+                }
+              }
+            }
+            catch(Exception ex) {
+              System.out.println(ex.getMessage());
+              ps.println(ex.getMessage());
+            }
+          }
+          else {
+            descCollection(sCollection);
+          }
+        }
+        else if(s3.equals("exp")) {
           String sCollection = getCollection(sCommand);
           Map<String,Object> mapFilter = getData(sCommand);
           if(sCollection == null || sCollection.length() == 0) {
             System.out.println("No collection specified.");
             ps.println("No collection specified.");
           }
-          else
-          if(mapFilter == null) {
+          else if(mapFilter == null) {
             System.out.println("Invalid filter");
             ps.println("Invalid filter");
           }
@@ -237,8 +255,7 @@ class CommandNoSQL
             }
           }
         }
-        else
-        if(s3.equals("vie")) {
+        else if(s3.equals("vie")) {
           String sCollection = getCollection(sCommand);
           Map<String,Object> mapFilter = getData(sCommand);
           String sFields = getListString(sCommand);
@@ -246,8 +263,7 @@ class CommandNoSQL
             System.out.println("No collection specified.");
             ps.println("No collection specified.");
           }
-          else
-          if(mapFilter == null) {
+          else if(mapFilter == null) {
             System.out.println("Invalid filter.");
             ps.println("Invalid filter.");
           }
@@ -267,8 +283,7 @@ class CommandNoSQL
             }
           }
         }
-        else
-        if(s3.equals("fin") || s3.equals("sel")) {
+        else if(s3.equals("fin") || s3.equals("sel")) {
           String sCollection = getCollection(sCommand);
           Map<String,Object> mapFilter = getData(sCommand);
           String sFields = getListString(sCommand);
@@ -276,8 +291,7 @@ class CommandNoSQL
             System.out.println("No collection specified.");
             ps.println("No collection specified.");
           }
-          else
-          if(mapFilter == null) {
+          else if(mapFilter == null) {
             System.out.println("Invalid filter.");
             ps.println("Invalid filter.");
           }
@@ -297,8 +311,7 @@ class CommandNoSQL
             }
           }
         }
-        else 
-        if(s3.equals("upd")) {
+        else if(s3.equals("upd")) {
           String sCollection = getCollection(sCommand);
           Map<String,Object> mapFilter = getData(sCommand);
           Map<String,Object> mapData   = getData2(sCommand);
@@ -306,18 +319,15 @@ class CommandNoSQL
             System.out.println("No collection specified.");
             ps.println("No collection specified.");
           }
-          else
-          if(mapFilter == null) {
+          else if(mapFilter == null) {
             System.out.println("Invalid filter.");
             ps.println("Invalid filter.");
           }
-          else
-          if(mapData == null) {
+          else if(mapData == null) {
             System.out.println("Invalid data.");
             ps.println("Invalid data.");
           }
-          else
-          if(mapData.isEmpty()) {
+          else if(mapData.isEmpty()) {
             System.out.println("Empty data.");
             ps.println("Empty data.");
           }
@@ -327,16 +337,14 @@ class CommandNoSQL
             ps.println(iResult + " record updated.");
           }
         }
-        else 
-        if(s3.equals("del") || s3.equals("rem")) {
+        else if(s3.equals("del") || s3.equals("rem")) {
           String sCollection = getCollection(sCommand);
           Map<String,Object> mapFilter = getData(sCommand);
           if(sCollection == null || sCollection.length() == 0) {
             System.out.println("No collection specified.");
             ps.println("No collection specified.");
           }
-          else
-          if(mapFilter == null) {
+          else if(mapFilter == null) {
             System.out.println("Invalid filter.");
             ps.println("Invalid filter.");
           }
@@ -346,21 +354,18 @@ class CommandNoSQL
             ps.println(iResult + " record deleted.");
           }
         }
-        else 
-        if(s3.equals("ins")) {
+        else if(s3.equals("ins")) {
           String sCollection = getCollection(sCommand);
           Map<String,Object> mapData = getData(sCommand);
           if(sCollection == null || sCollection.length() == 0) {
             System.out.println("No collection specified.");
             ps.println("No collection specified.");
           }
-          else
-          if(mapData == null) {
+          else if(mapData == null) {
             System.out.println("Invalid data.");
             ps.println("Invalid data.");
           }
-          else
-          if(mapData.isEmpty()) {
+          else if(mapData.isEmpty()) {
             System.out.println("Empty data.");
             ps.println("Empty data.");
           }
@@ -376,16 +381,14 @@ class CommandNoSQL
             }
           }
         }
-        else
-        if(s3.equals("cou") || s3.equals("cnt")) {
+        else if(s3.equals("cou") || s3.equals("cnt")) {
           String sCollection = getCollection(sCommand);
           Map<String,Object> mapFilter = getData(sCommand);
           if(sCollection == null || sCollection.length() == 0) {
             System.out.println("No collection specified.");
             ps.println("No collection specified.");
           }
-          else
-          if(mapFilter == null) {
+          else if(mapFilter == null) {
             System.out.println("Invalid filter");
             ps.println("Invalid filter");
           }
@@ -395,8 +398,7 @@ class CommandNoSQL
             ps.println(String.valueOf(iResult));
           }
         }
-        else 
-        if(s3.equals("idx") || s3.equals("ind")) {
+        else if(s3.equals("idx") || s3.equals("ind")) {
           String sCollection = getCollection(sCommand);
           List<String> listFields = getList(sCommand);
           if(sCollection == null || sCollection.length() == 0) {
@@ -434,8 +436,7 @@ class CommandNoSQL
             }
           }
         }
-        else
-        if(s3.equals("dro")) {
+        else if(s3.equals("dro")) {
           String sCollection = getCollection(sCommand);
           if(sCollection == null || sCollection.length() == 0) {
             System.out.println("No collection specified.");
@@ -453,8 +454,7 @@ class CommandNoSQL
             }
           }
         }
-        else
-        if(s3.equals("fil")) {
+        else if(s3.equals("fil")) {
           String sFileName = getCollection(sCommand);
           if(sFileName == null || sFileName.length() == 0) {
             System.out.println("No filename specified.");
@@ -492,8 +492,7 @@ class CommandNoSQL
             }
           }
         }
-        else
-        if(s3.equals("ech")) {
+        else if(s3.equals("ech")) {
           String sCollection = getCollection(sCommand);
           Map<String,Object> mapData1 = getData(sCommand);
           Map<String,Object> mapData2 = getData2(sCommand);
@@ -554,12 +553,93 @@ class CommandNoSQL
       if(listCollections != null) {
         int iCount = listCollections.size();
         for(int i = 0; i < iCount; i++) {
-          System.out.println(listCollections.get(i));
+          String collection = listCollections.get(i);
+          System.out.println(collection);
+          ps.println(collection);
         }
       }
       else {
         System.out.println("No collections found.");
+        ps.println("No collections found.");
       }
+    }
+    catch(Exception ex) {
+      System.out.println(ex.getMessage());
+      ps.println(ex.getMessage());
+    }
+  }
+  
+  protected
+  void descCollection(String collection)
+  {
+    if(collection == null || collection.length() == 0) {
+      System.out.println("Invalid collection=" + collection + ".");
+      return;
+    }
+    try {
+      List<Map<String, Object>> listResult = noSQLDB.find(collection, new HashMap<String, Object>(), "", "", 1);
+      if(listResult == null || listResult.size() == 0) {
+        System.out.println("No data found for " + collection + ".");
+        return;
+      }
+      Map<String, Object> record0 = listResult.get(0);
+      if(record0 == null || record0.isEmpty()) {
+        System.out.println("Invalid data found for " + collection + ".");
+        return;
+      }
+      StringBuilder sb = new StringBuilder();
+      sb.append("CREATE TABLE " + collection.toUpperCase() + " (\n");
+      
+      int count = 0;
+      Iterator<Map.Entry<String, Object>> iterator = record0.entrySet().iterator();
+      while(iterator.hasNext()) {
+        Map.Entry<String, Object> entry = iterator.next();
+        String key = entry.getKey();
+        Object val = entry.getValue();
+        count++;
+        if(count > 1) {
+          sb.append(",\n");
+        }
+        sb.append("  " + WUtil.rpad(key.toUpperCase(), ' ', 22) + " ");
+        if(val == null) {
+          sb.append("VARCHAR2(100)");
+        }
+        else if(val instanceof String) {
+          int length = ((String) val).length();
+          if(length < 30) {
+            sb.append("VARCHAR2(50)");
+          }
+          else if(length < 100) {
+            sb.append("VARCHAR2(100)");
+          }
+          else if(length < 200) {
+            sb.append("VARCHAR2(255)");
+          }
+          else if(length < 500) {
+            sb.append("VARCHAR2(512)");
+          }
+          else {
+            sb.append("VARCHAR2(1024)");
+          }
+        }
+        else if(val instanceof Integer) {
+          sb.append("NUMBER(10)");
+        }
+        else if(val instanceof Double) {
+          sb.append("NUMBER(8,2)");
+        }
+        else if(val instanceof Date) {
+          sb.append("DATE");
+        }
+        else {
+          sb.append("VARCHAR2(1024)");
+        }
+      }
+      
+      sb.append("\n);\n");
+      
+      System.out.println(sb);
+      ps.println(sb);
     }
     catch(Exception ex) {
       System.out.println(ex.getMessage());
@@ -622,12 +702,8 @@ class CommandNoSQL
       return new HashMap<String, Object>(0);
     }
     String sData = sCommand.substring(iStart, iEnd + 1);
-    Object oResult = null;
     try {
-      oResult = JSON.parse(sData);
-      if(oResult instanceof Map) {
-        return (Map<String,Object>) oResult;
-      }
+      return JSON.parseObj(sData);
     }
     catch(Exception ex) {
       System.out.println("Invalid JSON " + sData + ": " + ex.getMessage());
@@ -659,12 +735,8 @@ class CommandNoSQL
       return new HashMap<String, Object>(0);
     }
     String sData = sCommand.substring(iStart2, iEnd2 + 1);
-    Object oResult = null;
     try {
-      oResult = JSON.parse(sData);
-      if(oResult instanceof Map) {
-        return (Map<String,Object>) oResult;
-      }
+      return JSON.parseObj(sData);
     }
     catch(Exception ex) {
       System.out.println("Invalid JSON " + sData + ": " + ex.getMessage());
@@ -693,8 +765,7 @@ class CommandNoSQL
       if(sItem.startsWith("\"") && sItem.endsWith("\"")) {
         listResult.set(i, sItem.substring(1,sItem.length()-1));
       }
-      else
-      if(sItem.startsWith("'") && sItem.endsWith("'")) {
+      else if(sItem.startsWith("'") && sItem.endsWith("'")) {
         listResult.set(i, sItem.substring(1,sItem.length()-1));
       }
     }
@@ -723,8 +794,7 @@ class CommandNoSQL
       if(sItem.startsWith("\"") && sItem.endsWith("\"")) {
         sbResult.append("," + sItem.substring(1, sItem.length()-1));
       }
-      else
-      if(sItem.startsWith("'") && sItem.endsWith("'")) {
+      else if(sItem.startsWith("'") && sItem.endsWith("'")) {
         sbResult.append("," + sItem.substring(1, sItem.length()-1));
       }
       else {

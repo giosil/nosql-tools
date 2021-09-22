@@ -24,22 +24,22 @@ class ConnectionManager
   public static Connection getConnection(String sName) throws Exception {
     String sExceptions = "";
     Context ctx = new InitialContext();
-    // Impostazione iniziale
     try {
       DataSource ds = (DataSource) ctx.lookup(sJDBC_PATH + sName);
       if (ds != null)
         return ds.getConnection();
-    } catch (Exception ex) {
+    }
+    catch (Exception ex) {
       sExceptions += "[" + ex.getMessage() + "]";
       ex.printStackTrace();
     }
-    // Altri possibili percorsi...
     sJDBC_PATH = "java:/";
     try {
       DataSource ds = (DataSource) ctx.lookup(sJDBC_PATH + sName);
       if (ds != null)
         return ds.getConnection();
-    } catch (Exception ex) {
+    }
+    catch (Exception ex) {
       sExceptions += "[" + ex.getMessage() + "]";
     }
     sJDBC_PATH = "java:/jdbc/";
@@ -47,7 +47,8 @@ class ConnectionManager
       DataSource ds = (DataSource) ctx.lookup(sJDBC_PATH + sName);
       if (ds != null)
         return ds.getConnection();
-    } catch (Exception ex) {
+    }
+    catch (Exception ex) {
       sExceptions += "[" + ex.getMessage() + "]";
     }
     sJDBC_PATH = "java:/comp/env/jdbc/";
@@ -55,7 +56,8 @@ class ConnectionManager
       DataSource ds = (DataSource) ctx.lookup(sJDBC_PATH + sName);
       if (ds != null)
         return ds.getConnection();
-    } catch (Exception ex) {
+    }
+    catch (Exception ex) {
       sExceptions += "[" + ex.getMessage() + "]";
     }
     sJDBC_PATH = "jdbc/";
@@ -63,10 +65,11 @@ class ConnectionManager
       DataSource ds = (DataSource) ctx.lookup(sJDBC_PATH + sName);
       if (ds != null)
         return ds.getConnection();
-    } catch (Exception ex) {
+    }
+    catch (Exception ex) {
       sExceptions += "[" + ex.getMessage() + "]";
     }
-    throw new Exception("DataSource " + sName + " not found. (" + sExceptions + ")");
+    throw new Exception("DataSource " + sName + " not available. (" + sExceptions + ")");
   }
   
   public static void closeConnection(Connection conn) {

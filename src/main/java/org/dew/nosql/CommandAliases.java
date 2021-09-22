@@ -1,10 +1,15 @@
 package org.dew.nosql;
 
-import java.util.*;
-import java.io.*;
+import java.io.InputStream;
+
 import java.net.URL;
 
-@SuppressWarnings({"rawtypes","unchecked"})
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
+
 public
 class CommandAliases
 {
@@ -35,6 +40,7 @@ class CommandAliases
     throws Exception
   {
     if(aliases == null || alias == null) return null;
+    
     String result = aliases.getProperty(alias.trim());
     if(result == null) {
       if(alias.startsWith("$") && alias.length() > 0) {
@@ -45,14 +51,15 @@ class CommandAliases
   }
   
   public static
-  List getAliases()
+  List<String> getAliases()
     throws Exception
   {
-    if(aliases == null) return new ArrayList(0);
-    List listResult = new ArrayList();
-    Iterator iterator = aliases.keySet().iterator();
+    if(aliases == null) return new ArrayList<String>(0);
+    
+    List<String> listResult = new ArrayList<String>();
+    Iterator<Object> iterator = aliases.keySet().iterator();
     while(iterator.hasNext()) {
-      listResult.add(iterator.next());
+      listResult.add(iterator.next().toString());
     }
     Collections.sort(listResult);
     for(int i = 0; i < listResult.size(); i++) {

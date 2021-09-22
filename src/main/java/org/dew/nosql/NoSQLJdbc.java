@@ -4,7 +4,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
-
+import java.net.NetworkInterface;
+import java.nio.ByteBuffer;
 import java.sql.Blob;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -16,10 +17,13 @@ import java.sql.Timestamp;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -39,6 +43,7 @@ class NoSQLJdbc implements INoSQLDB
   protected String dataSource;
   
   public static Boolean _useSequece    = null;
+  public static Boolean _numSequence   = Boolean.TRUE;
   public static String _dbms           = "sql";
   public static Object _trueValue      = new Integer(1);
   public static Object _falseValue     = new Integer(0);
@@ -1176,14 +1181,19 @@ class NoSQLJdbc implements INoSQLDB
     try {
       conn = getConnection();
       
-      int nextValResult = 0;
+      Object nextValResult = null;
       if(_idFieldName != null && _idFieldName.length() > 0) {
         if(listFields.contains(_idFieldName)) {
           id = mapValues.get(_idFieldName);
         }
         else {
           listFields.add(0, _idFieldName);
-          nextValResult = nextVal(conn, _sequencePrefix + table.toUpperCase() + _sequenceSuffix);
+          if(_numSequence != null && _numSequence.booleanValue()) {
+            nextValResult = nextVal(conn, _sequencePrefix + table.toUpperCase() + _sequenceSuffix);
+          }
+          else {
+            nextValResult = nextValString();
+          }
           id = nextValResult;
         }
       }
@@ -1205,7 +1215,7 @@ class NoSQLJdbc implements INoSQLDB
         String field = listFields.get(i);
         
         Object parameter = null;
-        if(i == 0 && nextValResult != 0) {
+        if(i == 0 && nextValResult != null) {
           parameter = nextValResult;
         }
         else {
@@ -1886,6 +1896,21 @@ class NoSQLJdbc implements INoSQLDB
   }
   
   protected
+  String nextValString()
+  {
+    byte arrayOfByte[] = new byte[12];
+    ByteBuffer bb = ByteBuffer.wrap( arrayOfByte );
+    bb.putInt((int)(System.currentTimeMillis() / 1000) );
+    bb.putInt( _genmachine );
+    bb.putInt( _nextInc.getAndIncrement() );
+    final StringBuilder buf = new StringBuilder(24);
+    for(final byte b : arrayOfByte) {
+      buf.append(String.format("%02x", b & 0xff));
+    }
+    return buf.toString();
+  }
+  
+  protected
   int nextVal(Connection connection, String sequenceName)
     throws Exception
   {
@@ -2353,6 +2378,50 @@ class NoSQLJdbc implements INoSQLDB
     }
     catch(Exception ex) {
       ex.printStackTrace();
+    }
+  }
+  
+  private static AtomicInteger _nextInc = new AtomicInteger((new java.util.Random()).nextInt());
+  private static final int _genmachine;
+  static {
+    try {
+      // build a 2-byte machine piece based on NICs info
+      int machinePiece;
+      {
+        try {
+          StringBuilder sb = new StringBuilder();
+          Enumeration<NetworkInterface> e = NetworkInterface.getNetworkInterfaces();
+          while( e.hasMoreElements() ) {
+            NetworkInterface ni = e.nextElement();
+            sb.append( ni.toString() );
+          }
+          machinePiece = sb.toString().hashCode() << 16;
+        } catch(Throwable e) {
+          machinePiece = (new Random().nextInt()) << 16;
+        }
+      }
+      // add a 2 byte process piece. It must represent not only the JVM but the class loader.
+      // Since static var belong to class loader there could be collisions otherwise
+      final int processPiece;
+      {
+        int processId = new java.util.Random().nextInt();
+        try {
+          processId = java.lang.management.ManagementFactory.getRuntimeMXBean().getName().hashCode();
+        }
+        catch(Throwable t) {
+        }
+        ClassLoader loader = NoSQLElasticsearch.class.getClassLoader();
+        int loaderId = loader != null ? System.identityHashCode(loader) : 0;
+        
+        StringBuilder sb = new StringBuilder();
+        sb.append(Integer.toHexString(processId));
+        sb.append(Integer.toHexString(loaderId));
+        processPiece = sb.toString().hashCode() & 0xFFFF;
+      }
+      _genmachine = machinePiece | processPiece;
+    }
+    catch(Exception ex) {
+      throw new RuntimeException(ex);
     }
   }
 }

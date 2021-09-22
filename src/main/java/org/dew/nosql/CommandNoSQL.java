@@ -514,7 +514,7 @@ class CommandNoSQL
   protected 
   String waitForInput()
   {
-    byte[] result = new byte[640];
+    byte[] result = new byte[1024];
     int length = 0;
     try {
       System.out.print("# ");

@@ -200,25 +200,33 @@ class NoSQLDataSource
   INoSQLDB getDefaultNoSQLDB(String dbName) 
       throws Exception 
   {
-    String type = getProperty("nosqldb.type");
+    String prefix = dbName != null && dbName.length() > 0 ? dbName.toLowerCase() + "." : "";
+    
+    String type = getProperty(prefix + "nosqldb.type");
     if(type == null || type.length() < 3) {
       type = "mock";
-      
-      String sUri = getProperty("nosqldb.uri");
-      if(sUri == null || sUri.length() == 0) {
-        sUri = getProperty("nosqldb.url");
-      }
-      if(sUri != null && sUri.length() > 0) {
-        if(sUri.startsWith("mongo")){
-          type = "mongodb";
-        }
-        else if(sUri.startsWith("http")){
-          type = "elasticsearch";
-        }
-      }
     }
     else {
       type = type.toLowerCase();
+    }
+    
+    String sUri = getProperty(prefix + "nosqldb.uri");
+    if(sUri == null || sUri.length() == 0) {
+      sUri = getProperty(prefix + "nosqldb.url");
+    }
+    if(sUri != null && sUri.length() > 0) {
+      if(sUri.startsWith("mongo")){
+        type = "mongodb";
+      }
+      else if(sUri.startsWith("jdbc")){
+        type = "jdbc";
+      }
+      else if(sUri.startsWith("blank")){
+        type = "blank";
+      }
+      else if(sUri.startsWith("http")){
+        type = "elasticsearch";
+      }
     }
     
     INoSQLDB noSQLDB = null;
@@ -227,16 +235,16 @@ class NoSQLDataSource
       noSQLDB = new NoSQLBlank();
     }
     else if(type.startsWith("ela")) {
-      noSQLDB = new NoSQLElasticsearch(dbName);
+      noSQLDB = new NoSQLElasticsearch(sUri);
     } 
     else if(type.startsWith("mon")) {
-      noSQLDB = new NoSQLMongoDB3(dbName);
+      noSQLDB = new NoSQLMongoDB3(sUri);
     } 
     else if(type.startsWith("j")) {
-      noSQLDB = new NoSQLJdbc(dbName);
+      noSQLDB = new NoSQLJdbc(sUri);
     } 
     else {
-      noSQLDB = new NoSQLMock(dbName);
+      noSQLDB = new NoSQLMock(sUri);
     }
     
     if(logFilePath != null && logFilePath.length() > 0) {

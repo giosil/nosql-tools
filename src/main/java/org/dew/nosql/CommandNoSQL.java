@@ -596,6 +596,11 @@ class CommandNoSQL
         Map.Entry<String, Object> entry = iterator.next();
         String key = entry.getKey();
         Object val = entry.getValue();
+        
+        if(key.equalsIgnoreCase("_id"))  key = "id";
+        if(key.equalsIgnoreCase("date")) key = "date_";
+        if(key.equalsIgnoreCase("desc")) key = "desc_";
+        
         count++;
         if(count > 1) {
           sb.append(",\n");

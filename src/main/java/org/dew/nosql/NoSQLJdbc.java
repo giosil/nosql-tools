@@ -31,38 +31,40 @@ import javax.naming.InitialContext;
 import javax.sql.DataSource;
 
 import org.dew.nosql.json.JSON;
+
 import org.dew.nosql.util.WUtil;
 
 public 
 class NoSQLJdbc implements INoSQLDB 
 {
   protected static String logprefix = NoSQLJdbc.class.getSimpleName() + ".";
-  
+
   protected Connection _conn;
   protected String jdbcPath = "jdbc/";
   protected String dataSource;
   
-  public static Boolean _useSequece    = null;
-  public static Boolean _numSequence   = Boolean.TRUE;
-  public static String _dbms           = "sql";
-  public static Object _trueValue      = new Integer(1);
-  public static Object _falseValue     = new Integer(0);
-  public static String _idFieldName    = "ID";
-  public static String _tablesPrefix   = "NOS_";
-  public static String _sequenceTab    = _tablesPrefix + "SEQUENCES";
-  public static String _sequenceKey    = "NAME";
-  public static String _sequenceVal    = "VALUE";
-  public static String _sequencePrefix = "SEQ_";
-  public static String _sequenceSuffix = "";
-  public static String _filesTable     = _tablesPrefix + "FS_FILES";
-  public static String _filesNameField = "NAME";
-  public static String _filesContField = "CONTENT";
-  public static String _filesEmptyFunc = "EMPTY_BLOB()";
-  public static int    _queryTimeout   = 2 * 60;
-  
+  public static Boolean _useSequence    = null;
+  public static boolean _numSequence    = true;
+  public static boolean _disCreateIndex = true;
+  public static String _dbms            = "sql";
+  public static Object _trueValue       = new Integer(1);
+  public static Object _falseValue      = new Integer(0);
+  public static String _idFieldName     = "ID";
+  public static String _tablesPrefix    = "NOS_";
+  public static String _sequenceTab     = _tablesPrefix + "SEQUENCES";
+  public static String _sequenceKey     = "NAME";
+  public static String _sequenceVal     = "VALUE";
+  public static String _sequencePrefix  = "SEQ_";
+  public static String _sequenceSuffix  = "";
+  public static String _filesTable      = _tablesPrefix + "FS_FILES";
+  public static String _filesNameField  = "NAME";
+  public static String _filesContField  = "CONTENT";
+  public static String _filesEmptyFunc  = "EMPTY_BLOB()";
+  public static int    _queryTimeout    = 2 * 60;
+
   protected boolean debug = false;
   protected PrintStream log = System.out;
-  
+
   public NoSQLJdbc(Connection conn)
   {
     this._conn = conn;
@@ -73,7 +75,7 @@ class NoSQLJdbc implements INoSQLDB
       if(debug) log.println(logprefix + "<init> dbms=" + _dbms + ",useSequence=false...");
     }
   }
-  
+
   public NoSQLJdbc(Connection conn, boolean debug)
   {
     this._conn = conn;
@@ -85,7 +87,7 @@ class NoSQLJdbc implements INoSQLDB
       if(debug) log.println(logprefix + "<init> dbms=" + _dbms + ",useSequence=false...");
     }
   }
-  
+
   public NoSQLJdbc(String dataSource)
   {
     this.dataSource = dataSource;
@@ -96,7 +98,7 @@ class NoSQLJdbc implements INoSQLDB
       if(debug) log.println(logprefix + "<init> dbms=" + _dbms + ",useSequence=false...");
     }
   }
-  
+
   public NoSQLJdbc(String dataSource, boolean debug)
   {
     this.dataSource = dataSource;
@@ -118,7 +120,7 @@ class NoSQLJdbc implements INoSQLDB
   public boolean isDebug() {
     return this.debug;
   }
-  
+
   @Override
   public void setLog(PrintStream log) {
     this.log = log != null ? log : System.out; 
@@ -320,7 +322,7 @@ class NoSQLJdbc implements INoSQLDB
     String table = _tablesPrefix != null ? _tablesPrefix + collection : collection;
     try {
       executeDelete(table, id);
-      
+
       executeInsert(table, mapData);
     }
     catch(Exception ex) {
@@ -863,6 +865,11 @@ class NoSQLJdbc implements INoSQLDB
   boolean createIndex(String collection, String field, int type) throws Exception {
     if(debug) log.println(logprefix + "createIndex(" + collection + "," + field + "," + type + ")...");
     
+    if(_disCreateIndex) {
+      if(debug) log.println(logprefix + "createIndex(" + collection + "," + field + "," + type + ") -> false (_disCreateIndex=" + _disCreateIndex + ")");
+      return false;
+    }
+    
     String table = _tablesPrefix != null ? _tablesPrefix + collection : collection;
     
     String sSQL = "CREATE INDEX IDX" + System.currentTimeMillis() + " ON " + table.toUpperCase() + "(" + field.toUpperCase() + ")";
@@ -891,7 +898,7 @@ class NoSQLJdbc implements INoSQLDB
     if(debug) log.println(logprefix + "createIndex(" + collection + "," + field + "," + type + ") -> " + result);
     return result;
   }
-  
+
   @Override
   public List<Map<String, Object>> listIndexes(String collection) throws Exception {
     if(debug) log.println(logprefix + "listIndexes(" + collection + ")...");
@@ -926,7 +933,7 @@ class NoSQLJdbc implements INoSQLDB
   public String writeFile(String filename, byte[] content, Map<String, ?> mapMetadata) throws Exception {
     return writeFile(filename, content, mapMetadata, null);
   }
-  
+
   @Override
   public String writeFile(String filename, byte[] content, Map<String, ?> mapMetadata, Map<String, ?> mapAttributes) throws Exception {
     if(debug) {
@@ -1026,8 +1033,8 @@ class NoSQLJdbc implements INoSQLDB
       rs = stm.executeQuery(sSQL);
       while(rs.next()) {
         Map<String, Object> mapRecord = toMap(rs, true);
-        mapRecord.put(FILE_CONTENT, mapRecord.remove(_filesContField));
-        mapRecord.put(FILE_NAME,    mapRecord.remove(_filesNameField));
+        mapRecord.put(FILE_CONTENT, mapRecord.remove(_filesContField.toLowerCase()));
+        mapRecord.put(FILE_NAME,    mapRecord.remove(_filesNameField.toLowerCase()));
         listResult.add(mapRecord);
       }
     }
@@ -1069,8 +1076,8 @@ class NoSQLJdbc implements INoSQLDB
       }
       
       if(mapResult != null) {
-        mapResult.put(FILE_CONTENT, mapResult.remove(_filesContField));
-        mapResult.put(FILE_NAME,    mapResult.remove(_filesNameField));
+        mapResult.put(FILE_CONTENT, mapResult.remove(_filesContField.toLowerCase()));
+        mapResult.put(FILE_NAME,    mapResult.remove(_filesNameField.toLowerCase()));
       }
     }
     catch(Exception ex) {
@@ -1160,7 +1167,7 @@ class NoSQLJdbc implements INoSQLDB
     if(debug) log.println(logprefix + "renameFile(" + filename + "," + newFilename + ") -> " + result);
     return result;
   }
-  
+
   protected
   String executeInsert(String table, Map<String, ?> mapValues)
     throws Exception
@@ -1188,7 +1195,7 @@ class NoSQLJdbc implements INoSQLDB
         }
         else {
           listFields.add(0, _idFieldName);
-          if(_numSequence != null && _numSequence.booleanValue()) {
+          if(_numSequence) {
             nextValResult = nextVal(conn, _sequencePrefix + table.toUpperCase() + _sequenceSuffix);
           }
           else {
@@ -1201,7 +1208,10 @@ class NoSQLJdbc implements INoSQLDB
       String sSQL_I = "INSERT INTO " + table.toUpperCase();
       String sFields = "";
       for(int i = 0; i < listFields.size(); i++) {
-        sFields += "," + listFields.get(i).toUpperCase();
+        String sFieldName = listFields.get(i).toUpperCase();
+        if(sFieldName.equals("DATE")) sFieldName += "_";
+        if(sFieldName.equals("DESC")) sFieldName += "_";
+        sFields += "," + sFieldName;
       }
       sSQL_I += "(" + sFields.substring(1) + ")";
       
@@ -1277,7 +1287,7 @@ class NoSQLJdbc implements INoSQLDB
     }
     return result > 0 ? String.valueOf(id) : null;
   }
-  
+
   protected
   int executeUpdate(String table, Map<String, ?> mapValues, String id)
     throws Exception
@@ -1316,7 +1326,10 @@ class NoSQLJdbc implements INoSQLDB
     String sParams = "";
     String sValues = "";
     for(int i = 0; i < size - 1; i++) {
-      sParams += "," + listFields.get(i).toUpperCase() + "=?";
+      String sFieldName = listFields.get(i).toUpperCase();
+      if(sFieldName.equals("DATE")) sFieldName += "_";
+      if(sFieldName.equals("DESC")) sFieldName += "_";
+      sParams += "," + sFieldName + "=?";
     }
     
     String sSQL_W = " WHERE " + _idFieldName + "=";
@@ -1340,7 +1353,12 @@ class NoSQLJdbc implements INoSQLDB
           parameter = mapValues.get(field);
         }
         
-        if(debug) sValues += "," + field.toUpperCase() + "=" + toSQL(parameter);
+        if(debug) {
+          String sFieldName = field.toUpperCase();
+          if(sFieldName.equals("DATE")) sFieldName += "_";
+          if(sFieldName.equals("DESC")) sFieldName += "_";
+          sValues += "," + sFieldName + "=" + toSQL(parameter);
+        }
         
         if(parameter instanceof Integer) {
           pstm.setInt(i + 1, ((Integer) parameter).intValue());
@@ -1395,7 +1413,7 @@ class NoSQLJdbc implements INoSQLDB
     }
     return result;
   }
-  
+
   protected
   int executeUpdate(String table, Map<String, ?> mapValues, Map<String, ?> mapFilter)
     throws Exception
@@ -1413,14 +1431,20 @@ class NoSQLJdbc implements INoSQLDB
     
     int size = listFields.size();
     
-    String sSQL = "UPDATE " + table.toUpperCase() + " SET ";
-    String sFields = "";
+    String sSQL_U = "UPDATE " + table.toUpperCase() + " SET ";
+    
+    String sParams = "";
+    String sValues = "";
     for(int i = 0; i < size - 1; i++) {
-      sFields += "," + listFields.get(i).toUpperCase() + "=?";
+      String sFieldName = listFields.get(i).toUpperCase();
+      if(sFieldName.equals("DATE")) sFieldName += "_";
+      if(sFieldName.equals("DESC")) sFieldName += "_";
+      sParams += "," + sFieldName + "=?";
     }
-    sSQL += sFields.substring(1);
+    
+    String sSQL_W = "";
     if(where != null && where.length() > 0) {
-      sSQL += " WHERE " + where;
+      sSQL_W = " WHERE " + where;
     }
     
     int result = 0;
@@ -1429,12 +1453,19 @@ class NoSQLJdbc implements INoSQLDB
     try {
       conn = getConnection();
       
-      pstm = conn.prepareStatement(sSQL);
+      pstm = conn.prepareStatement(sSQL_U + sParams.substring(1) + sSQL_W);
       pstm.setQueryTimeout(_queryTimeout);
       for(int i = 0; i < size; i++) {
         String field = listFields.get(i);
         
         Object parameter = mapValues.get(field);
+        
+        if(debug) {
+          String sFieldName = field.toUpperCase();
+          if(sFieldName.equals("DATE")) sFieldName += "_";
+          if(sFieldName.equals("DESC")) sFieldName += "_";
+          sValues += "," + sFieldName + "=" + toSQL(parameter);
+        }
         
         if(parameter instanceof Integer) {
           pstm.setInt(i + 1, ((Integer) parameter).intValue());
@@ -1480,7 +1511,7 @@ class NoSQLJdbc implements INoSQLDB
         }
       }
       
-      if(debug) log.println(logprefix + "#  " + sSQL);
+      if(debug) log.println(logprefix + "#  " + sSQL_U + sValues.substring(1) + sSQL_W);
       result = pstm.executeUpdate();
     }
     finally {
@@ -1489,7 +1520,7 @@ class NoSQLJdbc implements INoSQLDB
     }
     return result;
   }
-  
+
   protected
   int executeDelete(String table, String id)
     throws Exception
@@ -1530,7 +1561,7 @@ class NoSQLJdbc implements INoSQLDB
     }
     return result;
   }
-  
+
   protected
   int executeDelete(String table, Map<String, ?> mapFilter)
     throws Exception
@@ -1559,7 +1590,7 @@ class NoSQLJdbc implements INoSQLDB
     }
     return result;
   }
-  
+
   protected
   int executeUnSet(String table, String fields, String id)
     throws Exception
@@ -1579,7 +1610,10 @@ class NoSQLJdbc implements INoSQLDB
     String sSQL = "UPDATE " + table.toUpperCase() + " SET ";
     String sFields = "";
     for(int i = 0; i < asFields.length; i++) {
-      sFields += "," + asFields[i].toUpperCase() + "=NULL";
+      String sFieldName = asFields[i].toUpperCase();
+      if(sFieldName.equals("DATE")) sFieldName += "_";
+      if(sFieldName.equals("DESC")) sFieldName += "_";
+      sFields += "," + sFieldName + "=NULL";
     }
     sSQL += sFields.substring(1);
     sSQL += " WHERE " + _idFieldName + "=";
@@ -1611,7 +1645,7 @@ class NoSQLJdbc implements INoSQLDB
     }
     return result;
   }
-  
+
   protected
   int executeInc(String table, String id, String field1, Number value1, String field2, Number value2)
     throws Exception
@@ -1662,7 +1696,7 @@ class NoSQLJdbc implements INoSQLDB
     }
     return result;
   }
-  
+
   protected
   int executeInc(String table, Map<String, ?> mapFilter, String field1, Number value1, String field2, Number value2)
     throws Exception
@@ -1701,7 +1735,7 @@ class NoSQLJdbc implements INoSQLDB
     }
     return result;
   }
-  
+
   protected
   String buildWhere(Map<String, ?> mapFilter)
   {
@@ -1712,7 +1746,7 @@ class NoSQLJdbc implements INoSQLDB
     while(iterator.hasNext()) {
       String key = iterator.next();
       Object valueTmp = mapFilter.get(key);
-      if(valueTmp == null) continue;
+      if(valueTmp == null) valueTmp = "null";
       
       boolean boStartsWithPerc = false;
       boolean boEndsWithPerc   = false;
@@ -1843,7 +1877,7 @@ class NoSQLJdbc implements INoSQLDB
     }
     return sResult;
   }
-  
+
   protected
   List<String> getFields(Map<String, ?> mapValues)
   {
@@ -1853,36 +1887,43 @@ class NoSQLJdbc implements INoSQLDB
     }
     Iterator<String> iterator = mapValues.keySet().iterator();
     while(iterator.hasNext()) {
-      listResult.add(iterator.next());
+      String fieldName = iterator.next();
+      if(fieldName.startsWith("_")) continue;
+      listResult.add(fieldName);
     }
     return listResult;
   }
-  
+
   protected
   boolean useSequence()
   {
     Connection conn = null;
     try {
+      conn = getConnection();
       return useSequence(conn);
+    }
+    catch(Exception ex) {
+      if(debug) log.println("Exception in useSequence(): " + ex);
+      return Boolean.FALSE;
     }
     finally {
       closeConnection(conn);
     }
   }
-  
+
   protected
   boolean useSequence(Connection connection)
   {
-    if(_useSequece != null) return _useSequece.booleanValue();
+    if(_useSequence != null) return _useSequence.booleanValue();
     try {
       DatabaseMetaData bdbmd = connection.getMetaData();
       String sDatabaseProductName = bdbmd.getDatabaseProductName();
       if(sDatabaseProductName != null && sDatabaseProductName.toUpperCase().indexOf("ORACLE") >= 0) {
-        _useSequece = Boolean.TRUE;
+        _useSequence = Boolean.TRUE;
         _dbms = "oracle";
       }
       else {
-        _useSequece = Boolean.FALSE;
+        _useSequence = Boolean.FALSE;
         if(sDatabaseProductName != null && sDatabaseProductName.length() > 0) {
           _dbms = sDatabaseProductName.toLowerCase();
         }
@@ -1891,10 +1932,10 @@ class NoSQLJdbc implements INoSQLDB
     catch(Throwable ex) {
       return false;
     }
-    if(_useSequece == null) return false;
-    return _useSequece.booleanValue();
+    if(_useSequence == null) return false;
+    return _useSequence.booleanValue();
   }
-  
+
   protected
   String nextValString()
   {
@@ -1909,7 +1950,7 @@ class NoSQLJdbc implements INoSQLDB
     }
     return buf.toString();
   }
-  
+
   protected
   int nextVal(Connection connection, String sequenceName)
     throws Exception
@@ -1960,7 +2001,7 @@ class NoSQLJdbc implements INoSQLDB
     }
     return iResult;
   }
-  
+
   protected static
   byte[] getBLOBContent(ResultSet rs, int index)
     throws Exception
@@ -1979,7 +2020,7 @@ class NoSQLJdbc implements INoSQLDB
     
     return baos.toByteArray();
   }
-  
+
   protected static
   byte[] getBLOBContent(ResultSet rs, String fieldName)
     throws Exception
@@ -1998,7 +2039,7 @@ class NoSQLJdbc implements INoSQLDB
     
     return baos.toByteArray();
   }
-  
+
   protected
   boolean setEmptyBLOB(Connection connection, String filename)
     throws Exception
@@ -2017,7 +2058,7 @@ class NoSQLJdbc implements INoSQLDB
     }
     return result > 0;
   }
-  
+
   protected
   boolean setBLOBContent(Connection connection, String filename, byte[] abBlobContent)
     throws Exception
@@ -2062,14 +2103,14 @@ class NoSQLJdbc implements INoSQLDB
     }
     return boResult;
   }
-  
+
   protected static
   List<Map<String, Object>> toList(ResultSet rs, int limit, int skip)
     throws Exception
   {
     return toList(rs, limit, skip, false);
   }
-  
+
   protected static
   List<Map<String, Object>> toList(ResultSet rs, int limit, int skip, boolean excludeBlobs)
     throws Exception
@@ -2090,6 +2131,7 @@ class NoSQLJdbc implements INoSQLDB
         String sField  = rsmd.getColumnName(i);
         int iFieldType = rsmd.getColumnType(i);
         
+        if(sField.endsWith("_")) sField = sField.substring(0, sField.length()-1);
         if(sField.indexOf("(") >= 0) sField = "value";
         
         if(iFieldType == java.sql.Types.CHAR || iFieldType == java.sql.Types.VARCHAR) {
@@ -2134,7 +2176,7 @@ class NoSQLJdbc implements INoSQLDB
   {
     return toMap(rs, false);
   }
-  
+
   protected static
   Map<String, Object> toMap(ResultSet rs, boolean excludeBlobs)
     throws Exception
@@ -2147,6 +2189,10 @@ class NoSQLJdbc implements INoSQLDB
     for(int i = 1; i <= iColumnCount; i++) {
       String sField  = rsmd.getColumnName(i);
       int iFieldType = rsmd.getColumnType(i);
+      
+      if(sField.endsWith("_")) sField = sField.substring(0, sField.length()-1);
+      if(sField.indexOf("(") >= 0) sField = "value";
+      
       if(iFieldType == java.sql.Types.CHAR || iFieldType == java.sql.Types.VARCHAR) {
         mapResult.put(sField.toLowerCase(), rs.getString(i));
       }
@@ -2177,7 +2223,7 @@ class NoSQLJdbc implements INoSQLDB
     
     return mapResult;
   }
-  
+
   protected
   Object getBooleanValue(Object oValue)
   {
@@ -2190,7 +2236,7 @@ class NoSQLJdbc implements INoSQLDB
       return _falseValue;
     }
   }
-  
+
   protected
   Object getIdValue(String id)
   {
@@ -2206,7 +2252,7 @@ class NoSQLJdbc implements INoSQLDB
     }
     return id;
   }
-  
+
   protected
   String toSQL(Object val)
   {
@@ -2245,7 +2291,7 @@ class NoSQLJdbc implements INoSQLDB
     
     return "'" + val.toString().replace("'", "''") + "'";
   }
-  
+
   protected
   String toSQL(Timestamp ts)
   {
@@ -2256,7 +2302,7 @@ class NoSQLJdbc implements INoSQLDB
     
     return toSQL(cal);
   }
-  
+
   protected
   String toSQL(Calendar cal)
   {
@@ -2278,7 +2324,7 @@ class NoSQLJdbc implements INoSQLDB
     }
     return "'" + iYear + "-" + sMonth + "-" + sDay + " " + sHour + ":" + sMinute + ":" + sSecond + "'";
   }
-  
+
   protected
   String toSQL(java.sql.Date date)
   {
@@ -2296,7 +2342,7 @@ class NoSQLJdbc implements INoSQLDB
     }
     return "'" + iYear + "-" + sMonth + "-" + sDay + "'";
   }
-  
+
   protected
   String toSQL(java.util.Date date)
   {
@@ -2314,7 +2360,7 @@ class NoSQLJdbc implements INoSQLDB
     }
     return "'" + iYear + "-" + sMonth + "-" + sDay + "'";
   }
-  
+
   protected
   Connection getConnection()
     throws Exception 

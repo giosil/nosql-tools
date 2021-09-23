@@ -823,7 +823,7 @@ class NoSQLJdbc implements INoSQLDB
     
     String table = _tablesPrefix != null ? _tablesPrefix + collection : collection;
     
-    String sSQL = "SELECT COUNT(*) FROM " + table;
+    String sSQL = "SELECT COUNT(*) FROM " + table.toUpperCase();
     String where = buildWhere(mapFilter);
     if(where != null && where.length() > 0) {
       sSQL += " WHERE " + where;
@@ -2093,29 +2093,29 @@ class NoSQLJdbc implements INoSQLDB
         if(sField.indexOf("(") >= 0) sField = "value";
         
         if(iFieldType == java.sql.Types.CHAR || iFieldType == java.sql.Types.VARCHAR) {
-          mapRecord.put(sField, rs.getString(i));
+          mapRecord.put(sField.toLowerCase(), rs.getString(i));
         }
         else if(iFieldType == java.sql.Types.DATE) {
-          mapRecord.put(sField, rs.getDate(i));
+          mapRecord.put(sField.toLowerCase(), rs.getDate(i));
         }
         else if(iFieldType == java.sql.Types.TIME || iFieldType == java.sql.Types.TIMESTAMP) {
-          mapRecord.put(sField, rs.getTimestamp(i));
+          mapRecord.put(sField.toLowerCase(), rs.getTimestamp(i));
         }
         else if(iFieldType == java.sql.Types.BINARY || iFieldType == java.sql.Types.BLOB || iFieldType == java.sql.Types.CLOB) {
-          mapRecord.put(sField, getBLOBContent(rs, i));
+          mapRecord.put(sField.toLowerCase(), getBLOBContent(rs, i));
         }
         else {
           String sValue = rs.getString(i);
           if(sValue != null) {
             if(sValue.indexOf('.') >= 0 || sValue.indexOf(',') >= 0) {
-              mapRecord.put(sField, new Double(rs.getDouble(i)));
+              mapRecord.put(sField.toLowerCase(), new Double(rs.getDouble(i)));
             }
             else {
-              mapRecord.put(sField, new Integer(rs.getInt(i)));
+              mapRecord.put(sField.toLowerCase(), new Integer(rs.getInt(i)));
             }
           }
           else {
-            mapRecord.put(sField, null);
+            mapRecord.put(sField.toLowerCase(), null);
           }
         }
       }
@@ -2148,29 +2148,29 @@ class NoSQLJdbc implements INoSQLDB
       String sField  = rsmd.getColumnName(i);
       int iFieldType = rsmd.getColumnType(i);
       if(iFieldType == java.sql.Types.CHAR || iFieldType == java.sql.Types.VARCHAR) {
-        mapResult.put(sField, rs.getString(i));
+        mapResult.put(sField.toLowerCase(), rs.getString(i));
       }
       else if(iFieldType == java.sql.Types.DATE) {
-        mapResult.put(sField, rs.getDate(i));
+        mapResult.put(sField.toLowerCase(), rs.getDate(i));
       }
       else if(iFieldType == java.sql.Types.TIME || iFieldType == java.sql.Types.TIMESTAMP) {
-        mapResult.put(sField, rs.getTimestamp(i));
+        mapResult.put(sField.toLowerCase(), rs.getTimestamp(i));
       }
       else if(iFieldType == java.sql.Types.BINARY || iFieldType == java.sql.Types.BLOB || iFieldType == java.sql.Types.CLOB) {
-        mapResult.put(sField, getBLOBContent(rs, i));
+        mapResult.put(sField.toLowerCase(), getBLOBContent(rs, i));
       }
       else {
         String sValue = rs.getString(i);
         if(sValue != null) {
           if(sValue.indexOf('.') >= 0 || sValue.indexOf(',') >= 0) {
-            mapResult.put(sField, new Double(rs.getDouble(i)));
+            mapResult.put(sField.toLowerCase(), new Double(rs.getDouble(i)));
           }
           else {
-            mapResult.put(sField, new Integer(rs.getInt(i)));
+            mapResult.put(sField.toLowerCase(), new Integer(rs.getInt(i)));
           }
         }
         else {
-          mapResult.put(sField, null);
+          mapResult.put(sField.toLowerCase(), null);
         }
       }
     }

@@ -585,6 +585,7 @@ class NoSQLJdbc implements INoSQLDB
       sSQL += " WHERE " + where;
     }
     if(orderBy != null && orderBy.length() > 0) {
+      if(orderBy.startsWith("_")) orderBy = orderBy.substring(1);
       sSQL += " ORDER BY " + orderBy;
     }
     
@@ -636,6 +637,7 @@ class NoSQLJdbc implements INoSQLDB
       sSQL += " WHERE " + where;
     }
     if(orderBy != null && orderBy.length() > 0) {
+      if(orderBy.startsWith("_")) orderBy = orderBy.substring(1);
       sSQL += " ORDER BY " + orderBy;
     }
     
